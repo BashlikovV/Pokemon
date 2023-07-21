@@ -1,6 +1,7 @@
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
+    id("kotlin-parcelize")
 }
 
 android {
@@ -54,4 +55,11 @@ dependencies {
     implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.6.1")
     //Gson
     implementation("com.google.code.gson:gson:2.10.1")
+    //Fragment
+    implementation("androidx.fragment:fragment-ktx:1.6.0")
+    //Glide
+    implementation ("com.github.bumptech.glide:glide:4.15.1")
+    // Retrofit
+    implementation ("com.squareup.retrofit2:retrofit:2.9.0")
+    implementation ("com.squareup.retrofit2:converter-gson:2.9.0")
 }

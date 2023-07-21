@@ -1,7 +1,7 @@
-package by.bashlikovvv.pokemon.presentation
+package by.bashlikovvv.pokemon.presentation.view
 
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import androidx.appcompat.app.AppCompatActivity
 import by.bashlikovvv.pokemon.databinding.ActivityPokemonBinding
 
 class PokemonActivity : AppCompatActivity() {
@@ -12,5 +12,6 @@ class PokemonActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityPokemonBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        setSupportActionBar(binding.toolbar)
     }
 }
