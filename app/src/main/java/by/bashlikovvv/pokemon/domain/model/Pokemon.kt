@@ -1,9 +1,10 @@
 package by.bashlikovvv.pokemon.domain.model
 
-import com.google.gson.annotations.SerializedName
+import android.graphics.Bitmap
 
 data class Pokemon(
-    @SerializedName("name") val pokemonName: String,
-    @SerializedName("url") val pokemonUrl: String,
-    @SerializedName("id") val pokemonId: Long
+    val name: String,
+    val id: Long,
+    val image: Bitmap,
+    val sprite: Bitmap
 )
