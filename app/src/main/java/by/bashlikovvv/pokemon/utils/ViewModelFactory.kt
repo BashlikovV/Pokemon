@@ -15,7 +15,7 @@ class ViewModelFactory<VM : ViewModel>(
 ) : ViewModelProvider.Factory {
 
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
-        return viewModelCreator as T
+        return viewModelCreator() as T
     }
 }
 
