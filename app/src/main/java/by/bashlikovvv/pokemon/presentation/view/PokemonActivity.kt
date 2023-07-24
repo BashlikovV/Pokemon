@@ -2,6 +2,7 @@ package by.bashlikovvv.pokemon.presentation.view
 
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
+import by.bashlikovvv.pokemon.R
 import by.bashlikovvv.pokemon.databinding.ActivityPokemonBinding
 
 class PokemonActivity : AppCompatActivity() {
@@ -13,5 +14,18 @@ class PokemonActivity : AppCompatActivity() {
         binding = ActivityPokemonBinding.inflate(layoutInflater)
         setContentView(binding.root)
         setSupportActionBar(binding.toolbar)
+
+        setUpFragment(savedInstanceState)
+    }
+
+    private fun setUpFragment(savedInstanceState: Bundle?) {
+        if (savedInstanceState == null) {
+            val fragment = PokemonListFragment.newInstance()
+
+            supportFragmentManager
+                .beginTransaction()
+                .add(R.id.fragment_container, fragment)
+                .commit()
+        }
     }
 }
