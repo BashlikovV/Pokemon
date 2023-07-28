@@ -11,7 +11,7 @@ data class PokemonDetails(
     val heightInDm: Int
 )
 
-data class Sprites(val sprites: Map<String, Bitmap>)
+data class Sprites(val sprites: Map<String, Bitmap?>)
 
 sealed class SpriteNames(val name: String) {
 
