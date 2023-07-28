@@ -1,9 +1,8 @@
 package by.bashlikovvv.pokemon.domain.repository
 
-import by.bashlikovvv.pokemon.domain.model.Pokemon
-import kotlinx.coroutines.flow.Flow
+import by.bashlikovvv.pokemon.domain.model.PokemonItem
 
 interface IPokemonListRepository {
 
-    fun getList(): Flow<List<Pokemon>>
+    suspend fun getList(): List<PokemonItem>
 }
