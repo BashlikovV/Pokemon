@@ -1,20 +1,39 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/pokemon_list_item"
-    android:layout_width="wrap_content"
+    android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:padding="5dp"
-    android:gravity="center_horizontal"
-    android:orientation="vertical">
+    android:gravity="center_vertical"
+    android:orientation="horizontal">
 
-    <ImageView
-        android:id="@+id/pokemon_sprite"
+    <FrameLayout
         android:layout_width="55dp"
         android:layout_height="55dp"
-        android:contentDescription="@string/pokemon_sprite"
-        android:scaleType="centerCrop"
-        android:background="@drawable/round_outline"
-        android:src="@drawable/image8" />
+        android:layout_marginEnd="5dp" >
+
+        <ImageView
+            android:id="@+id/pokemon_sprite"
+            android:layout_width="55dp"
+            android:layout_height="55dp"
+            android:contentDescription="@string/pokemon_sprite"
+            android:scaleType="centerCrop"
+            android:background="@drawable/round_outline"
+            android:src="@drawable/image8"/>
+
+
+        <ImageView
+            android:id="@+id/select_indicator"
+            android:layout_width="15dp"
+            android:layout_height="15dp"
+            android:src="@drawable/baseline_check_mark_24"
+            android:layout_gravity="bottom|start"
+            android:layout_marginEnd="2.5dp"
+            android:layout_marginBottom="2.5dp"
+            app:tint="@color/green_yellow"
+            android:contentDescription="@string/select_indicator" />
+    </FrameLayout>
 
     <TextView
         android:id="@+id/pokemon_name"

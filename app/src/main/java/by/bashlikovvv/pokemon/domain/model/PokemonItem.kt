@@ -2,9 +2,8 @@ package by.bashlikovvv.pokemon.domain.model
 
 import android.graphics.Bitmap
 
-data class Pokemon(
+data class PokemonItem(
     val name: String,
-    val id: Long,
-    val image: Bitmap,
-    val sprite: Bitmap
+    val id: Int,
+    val sprites: MutableMap<String, Bitmap?>
 )
