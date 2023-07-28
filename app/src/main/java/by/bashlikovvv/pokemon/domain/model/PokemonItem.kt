@@ -4,6 +4,6 @@ import android.graphics.Bitmap
 
 data class PokemonItem(
     val name: String,
-    val id: Long,
-    val sprites: Map<String, Bitmap>
+    val id: Int,
+    val sprites: MutableMap<String, Bitmap?>
 )
