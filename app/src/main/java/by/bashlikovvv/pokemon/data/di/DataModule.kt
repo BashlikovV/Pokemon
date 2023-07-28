@@ -5,31 +5,46 @@ import android.net.ConnectivityManager
 import by.bashlikovvv.pokemon.data.remote.PokemonDetailsApi
 import by.bashlikovvv.pokemon.data.remote.PokemonListApi
 import by.bashlikovvv.pokemon.data.repository.PokemonListRepository
+import by.bashlikovvv.pokemon.domain.usecase.GetPokemonByListUseCase
 import by.bashlikovvv.pokemon.utils.Constants
+import okhttp3.OkHttpClient
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 
 object DataModule {
 
-    private lateinit var applicationContext: Context
+    lateinit var applicationContext: Context
+
+    private fun provideOkHttpClient(): OkHttpClient {
+        return OkHttpClient.Builder().build()
+    }
 
     private fun provideRetrofit(): Retrofit = Retrofit.Builder()
         .baseUrl(Constants.BASE_URL)
+        .client(provideOkHttpClient())
         .addConverterFactory(GsonConverterFactory.create())
         .build()
 
-    private fun providePokemonListApi(retrofit: Retrofit = provideRetrofit()): PokemonListApi = retrofit.create(PokemonListApi::class.java)
+    private fun providePokemonListApi(retrofit: Retrofit = provideRetrofit()): PokemonListApi {
+        return retrofit.create(PokemonListApi::class.java)
+    }
 
-    fun providePokemonDetailsApi(retrofit: Retrofit = provideRetrofit()): PokemonDetailsApi = retrofit.create(PokemonDetailsApi::class.java)
+    private fun providePokemonDetailsApi(retrofit: Retrofit = provideRetrofit()): PokemonDetailsApi {
+        return retrofit.create(PokemonDetailsApi::class.java)
+    }
 
-    private fun provideConnectivityManager(context: Context = applicationContext): ConnectivityManager? {
+    private fun provideConnectivityManager(context: Context): ConnectivityManager? {
         return context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager?
     }
 
-    fun providePokemonListRepository(): PokemonListRepository {
+    private fun providePokemonListRepository(context: Context): PokemonListRepository {
         return PokemonListRepository(
-            applicationContext, providePokemonListApi(), provideConnectivityManager()
+             provideConnectivityManager(context), providePokemonListApi(), providePokemonDetailsApi()
         )
+    }
+
+    fun providePokemonListUseCase(context: Context): GetPokemonByListUseCase {
+        return GetPokemonByListUseCase(providePokemonListRepository(context))
     }
 
     fun init(context: Context) {
