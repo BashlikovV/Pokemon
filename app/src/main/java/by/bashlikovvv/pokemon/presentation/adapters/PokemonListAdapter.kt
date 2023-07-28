@@ -1,54 +1,42 @@
 package by.bashlikovvv.pokemon.presentation.adapters
 
-import android.animation.ObjectAnimator
-import android.animation.PropertyValuesHolder
-import android.annotation.SuppressLint
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.view.animation.LinearInterpolator
+import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import by.bashlikovvv.pokemon.R
 import by.bashlikovvv.pokemon.databinding.PokemonListItemBinding
-import by.bashlikovvv.pokemon.domain.model.Pokemon
+import by.bashlikovvv.pokemon.domain.model.PokemonItem
+import by.bashlikovvv.pokemon.domain.model.SpriteNames
+import by.bashlikovvv.pokemon.presentation.contract.CustomAction
 
 interface UserActionListener {
 
-    fun onOpen(pokemon: Pokemon)
+    fun onOpen(pokemonItem: PokemonItem)
+
+    fun onSelect(pokemonItem: PokemonItem)
 }
 
 class PokemonListAdapter(
     private val actionListener: UserActionListener
-) : RecyclerView.Adapter<PokemonListAdapter.PokemonListHolder>(), View.OnClickListener {
+) : RecyclerView.Adapter<PokemonListAdapter.PokemonListHolder>(), View.OnClickListener, View.OnLongClickListener {
 
-    var pokemon: List<Pokemon> = emptyList()
-        @SuppressLint("NotifyDataSetChanged")
-        set(value) {
-            field = value
-            notifyDataSetChanged()
-        }
+    private var pokemon: List<PokemonItem> = emptyList()
 
-    private var startAnimator = ObjectAnimator()
+    private var selectedPokemonItem: MutableMap<PokemonItem, Boolean> = mutableMapOf()
 
-    private var stopAnimator = ObjectAnimator()
-
-    var selectedItem = 0
-        set(value) {
-            field = value
-            notifyItemChanged(field)
-            stopAnimator.start()
-        }
+    val deleteCustomAction = CustomAction(
+        iconRes = R.drawable.baseline_delete_outline_24,
+        textRes = R.string.remove
+    ) { removePokemon() }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): PokemonListHolder {
         val inflater = LayoutInflater.from(parent.context)
         val binding = PokemonListItemBinding.inflate(inflater, parent, false)
 
         binding.root.setOnClickListener(this)
-        binding.root.animate().withEndAction {
-            binding.decLayoutSize()
-        }.withStartAction {
-            binding.incLayoutSize()
-        }
+        binding.root.setOnLongClickListener(this)
 
         return PokemonListHolder(binding)
     }
@@ -59,81 +47,14 @@ class PokemonListAdapter(
         val item = pokemon[position]
         with(holder.binding) {
             pokemonListItem.tag = item
-
-            if (selectedItem == item.id.toInt()) {
-                setIncSpriteAnimation()
-                setDecSpriteAnimation()
-                startAnimator.start()
-            }
-
-            pokemonSprite.setImageBitmap(item.sprite)
+            pokemonSprite.setImageBitmap(item.sprites[SpriteNames.FrontShiny().name])
             pokemonName.text = item.name
+            if (selectedPokemonItem[item] == true) {
+                selectIndicator.visibility = View.VISIBLE
+            } else {
+                selectIndicator.visibility = View.INVISIBLE
+            }
         }
-    }
-
-    private fun PokemonListItemBinding.setIncSpriteAnimation() {
-        val scaleX = PropertyValuesHolder.ofFloat(
-            View.SCALE_X, 1f, 2f
-        )
-        val scaleY = PropertyValuesHolder.ofFloat(
-            View.SCALE_Y, 1f, 2f
-        )
-        val translationY = PropertyValuesHolder.ofFloat(
-            View.TRANSLATION_Y, 1f, -100f
-        )
-        startAnimator = ObjectAnimator.ofPropertyValuesHolder(
-            pokemonSprite,
-            scaleX, scaleY, translationY
-        ).apply {
-            duration = 1000
-            interpolator = LinearInterpolator()
-            repeatCount = 0
-        }
-    }
-
-    private fun PokemonListItemBinding.setDecSpriteAnimation() {
-        val scaleX = PropertyValuesHolder.ofFloat(
-            View.SCALE_X, 2f, 1f
-        )
-        val scaleY = PropertyValuesHolder.ofFloat(
-            View.SCALE_Y, 2f, 1f
-        )
-        val translationY = PropertyValuesHolder.ofFloat(
-            View.TRANSLATION_Y, -100f, 1f
-        )
-        stopAnimator = ObjectAnimator.ofPropertyValuesHolder(
-            pokemonSprite,
-            scaleX, scaleY, translationY
-        ).apply {
-            duration = 1000
-            interpolator = LinearInterpolator()
-            repeatCount = 0
-            repeatMode = ObjectAnimator.REVERSE
-        }
-    }
-
-    private fun PokemonListItemBinding.incLayoutSize() {
-        val newHeight = root.height * 2
-        val newWidth = root.width * 2
-
-        root.layoutParams.apply {
-            height = newHeight
-            width = newWidth
-        }
-
-        notifyItemChanged(selectedItem)
-    }
-
-    private fun PokemonListItemBinding.decLayoutSize() {
-        val newHeight = root.height / 2
-        val newWidth = root.width / 2
-
-        root.layoutParams.apply {
-            height = newHeight
-            width = newWidth
-        }
-
-        notifyItemChanged(selectedItem)
     }
 
     class PokemonListHolder(
@@ -141,11 +62,48 @@ class PokemonListAdapter(
     ) : RecyclerView.ViewHolder(binding.root)
 
     override fun onClick(v: View) {
-        val item = v.tag as Pokemon
+        val item = v.tag as PokemonItem
         when (v.id) {
             R.id.pokemon_list_item -> {
                 actionListener.onOpen(item)
             }
         }
+    }
+
+    fun setPokemon(pokemonItem: List<PokemonItem>) {
+        val diffCallback = PokemonDiffCallback(
+            oldList = this.pokemon, newList = pokemonItem
+        )
+        val diffResult = DiffUtil.calculateDiff(diffCallback)
+        this.pokemon = pokemonItem
+        diffResult.dispatchUpdatesTo(this)
+    }
+
+    fun selectPokemon(pokemonItem: PokemonItem) {
+        selectedPokemonItem.merge(pokemonItem, selectedPokemonItem[pokemonItem] ?: true) { _, _ ->
+            selectedPokemonItem[pokemonItem]?.not() ?: true
+        }
+    }
+
+    override fun onLongClick(v: View): Boolean {
+        val item = v.tag as PokemonItem
+        return when (v.id) {
+            R.id.pokemon_list_item -> {
+                actionListener.onSelect(item)
+                notifyItemChanged(pokemon.indexOf(item))
+                true
+            }
+            else -> { false }
+        }
+    }
+
+    private fun removePokemon() {
+        val tmp = pokemon.toMutableList()
+        tmp.removeAll(selectedPokemonItem.map { it.key })
+        selectedPokemonItem = mutableMapOf()
+        val diffCallback = PokemonDiffCallback(oldList = this.pokemon, newList = tmp)
+        val diffResult = DiffUtil.calculateDiff(diffCallback)
+        this.pokemon = tmp
+        diffResult.dispatchUpdatesTo(this)
     }
 }
