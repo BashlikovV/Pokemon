@@ -9,8 +9,13 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
+fun interface UpdateActionListener {
+    fun invoke()
+}
+
 class PokemonListViewModel(
-    getPokemonByListUseCase: GetPokemonByListUseCase
+    getPokemonByListUseCase: GetPokemonByListUseCase,
+    updateActionListener: UpdateActionListener
 ) : ViewModel() {
 
     private val _pokemon: MutableStateFlow<List<PokemonItem>> = MutableStateFlow(emptyList())
@@ -18,7 +23,8 @@ class PokemonListViewModel(
 
     init {
         viewModelScope.launch {
+            updateActionListener.invoke()
             _pokemon.update { getPokemonByListUseCase.execute() }
-        }
+        }.invokeOnCompletion { updateActionListener.invoke() }
     }
 }

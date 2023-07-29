@@ -19,8 +19,7 @@
             android:layout_height="55dp"
             android:contentDescription="@string/pokemon_sprite"
             android:scaleType="centerCrop"
-            android:background="@drawable/round_outline"
-            android:src="@drawable/image8"/>
+            android:background="@drawable/round_outline_10" />
 
 
         <ImageView

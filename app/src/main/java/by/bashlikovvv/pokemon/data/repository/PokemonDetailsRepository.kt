@@ -3,47 +3,33 @@ package by.bashlikovvv.pokemon.data.repository
 import android.graphics.Bitmap
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
+import by.bashlikovvv.pokemon.data.NetworkException
 import by.bashlikovvv.pokemon.data.mapper.PokemonDetailsDtoMapper
-import by.bashlikovvv.pokemon.data.mapper.PokemonDtoMapper
 import by.bashlikovvv.pokemon.data.remote.PokemonDetailsApi
-import by.bashlikovvv.pokemon.data.remote.PokemonListApi
 import by.bashlikovvv.pokemon.data.remote.response.SpritesDto
-import by.bashlikovvv.pokemon.domain.model.PokemonItem
+import by.bashlikovvv.pokemon.domain.model.PokemonDetails
 import by.bashlikovvv.pokemon.domain.model.SpriteNames
 import by.bashlikovvv.pokemon.domain.model.Sprites
-import by.bashlikovvv.pokemon.domain.repository.IPokemonListRepository
+import by.bashlikovvv.pokemon.domain.repository.IPokemonDetailsRepository
 import by.bashlikovvv.pokemon.utils.getBitmapWithGlide
 
-class PokemonListRepository(
+class PokemonDetailsRepository(
     private val cm: ConnectivityManager?,
-    private val pokemonListApi: PokemonListApi,
     private val pokemonDetailsApi: PokemonDetailsApi
-) : IPokemonListRepository {
+) : IPokemonDetailsRepository {
 
-    private val pokemonDtoMapper = PokemonDtoMapper()
-
-    override suspend fun getList(): List<PokemonItem> {
-        return  apiGetList()
+    override suspend fun getDetails(id: Int): PokemonDetails {
+        return apiGetDetails(id)
     }
 
-    private suspend fun apiGetList(): List<PokemonItem> {
+    private suspend fun apiGetDetails(id: Int): PokemonDetails {
         return if (isConnected()) {
-            val pokemonListResponse = pokemonListApi.getPokemonList()
-            val result = pokemonListResponse.body()!!.results.map {
-                pokemonDtoMapper.mapFromEntity(it)
-            }
-            result.forEach {
-                val body = pokemonDetailsApi.getPokemonDetailsById(it.id)
-                val pokemonDetailsDto = body.body()!!
-                val sprites = PokemonDetailsDtoMapper(
-                    getSprites(pokemonDetailsDto.spritesDto)
-                ).mapFromEntity(pokemonDetailsDto).sprites.sprites
-                it.sprites.putAll(sprites)
-            }
-
-            return result
+            val pokemonDetailsResponse = pokemonDetailsApi.getPokemonDetailsById(id)
+            val pokemonDetailsDto = pokemonDetailsResponse.body()!!
+            val pokemonDetailsDtoMapper = PokemonDetailsDtoMapper(getSprites(pokemonDetailsDto.spritesDto))
+            pokemonDetailsDtoMapper.mapFromEntity(pokemonDetailsDto)
         } else {
-            listOf()
+            throw NetworkException()
         }
     }
 
@@ -64,7 +50,14 @@ class PokemonListRepository(
 
     private suspend fun getSprites(spritesDto: SpritesDto): Sprites {
         val sprites = mutableMapOf<String, Bitmap?>()
+        sprites[SpriteNames.BackDefault().name] = getBitmapWithGlide(spritesDto.backDefault)
+        sprites[SpriteNames.BackFemale().name] = getBitmapWithGlide(spritesDto.backFemale)
+        sprites[SpriteNames.BackShiny().name] = getBitmapWithGlide(spritesDto.backShiny)
+        sprites[SpriteNames.BackShinyFemale().name] = getBitmapWithGlide(spritesDto.backShinyFemale)
+        sprites[SpriteNames.FrontDefault().name] = getBitmapWithGlide(spritesDto.frontDefault)
+        sprites[SpriteNames.FrontFemale().name] = getBitmapWithGlide(spritesDto.frontFemale)
         sprites[SpriteNames.FrontShiny().name] = getBitmapWithGlide(spritesDto.frontShiny)
+        sprites[SpriteNames.FrontShinyFemale().name] = getBitmapWithGlide(spritesDto.frontShinyFemale)
 
         return Sprites(sprites)
     }

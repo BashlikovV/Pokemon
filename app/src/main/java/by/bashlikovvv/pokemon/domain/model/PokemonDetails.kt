@@ -3,12 +3,12 @@ package by.bashlikovvv.pokemon.domain.model
 import android.graphics.Bitmap
 
 data class PokemonDetails(
-    val id: Long,
-    val name: String,
-    val sprites: Sprites,
-    val types: List<String>,
-    val weightInHg: Int,
-    val heightInDm: Int
+    val id: Long = 0,
+    val name: String = "",
+    val sprites: Sprites = Sprites(emptyMap()),
+    val types: List<String> = emptyList(),
+    val weightInHg: Int = 0,
+    val heightInDm: Int = 0
 )
 
 data class Sprites(val sprites: Map<String, Bitmap?>)

@@ -4,11 +4,12 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Toast
+import androidx.core.os.bundleOf
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
+import androidx.navigation.NavOptions
+import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.LinearSnapHelper
 import androidx.recyclerview.widget.RecyclerView.VERTICAL
 import by.bashlikovvv.pokemon.R
 import by.bashlikovvv.pokemon.data.di.DataModule
@@ -28,13 +29,15 @@ class PokemonListFragment : Fragment(), HasCustomTitle, HasCustomAction {
 
     private lateinit var binding: FragmentPokemonListBinding
 
-    private val pokemonItemListViewModel: PokemonListViewModel by viewModelCreator {
-        PokemonListViewModel(DataModule.providePokemonListUseCase(requireContext()))
-    }
-    private val adapter: PokemonListAdapter by lazy(LazyThreadSafetyMode.NONE) {
-        PokemonListAdapter(actionListener)
+    private val viewModel: PokemonListViewModel by viewModelCreator {
+        PokemonListViewModel(DataModule.providePokemonListUseCase(requireContext())) {
+            updateActionListener()
+        }
     }
 
+    private val adapter: PokemonListAdapter by lazy(LazyThreadSafetyMode.SYNCHRONIZED) {
+        PokemonListAdapter(actionListener)
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -42,29 +45,39 @@ class PokemonListFragment : Fragment(), HasCustomTitle, HasCustomAction {
     ): View {
         binding = FragmentPokemonListBinding.inflate(inflater, container, false)
 
-        setUpRecyclerView()
-
         return binding.root
     }
 
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        binding = FragmentPokemonListBinding.bind(view)
+        setUpRecyclerView()
+    }
+
     private fun setUpRecyclerView() {
-        lifecycleScope.launch {
-            pokemonItemListViewModel.pokemon.collectLatest {
-                adapter.setPokemon(it)
-            }
-        }
         val layoutManager = LinearLayoutManager(requireContext()).apply {
             orientation = VERTICAL
         }
-        val snapHelper = LinearSnapHelper()
         binding.pokemonRecyclerView.layoutManager = layoutManager
         binding.pokemonRecyclerView.adapter = adapter
-        snapHelper.attachToRecyclerView(binding.pokemonRecyclerView)
+        lifecycleScope.launch {
+            viewModel.pokemon.collectLatest {
+                adapter.setPokemon(it)
+            }
+        }
     }
 
     private val actionListener = object : UserActionListener {
         override fun onOpen(pokemonItem: PokemonItem) {
-            Toast.makeText(requireContext(), pokemonItem.name, Toast.LENGTH_SHORT).show()
+            val args = bundleOf(PokemonDetailsFragment.ARG_ID to pokemonItem.id)
+            this@PokemonListFragment.findNavController().navigate(
+                resId = R.id.action_pokemonListFragment_to_pokemonDetailsFragment,
+                args = args,
+                navOptions = NavOptions.Builder()
+                    .setEnterAnim(com.google.android.material.R.anim.abc_tooltip_enter)
+                    .setExitAnim(com.google.android.material.R.anim.abc_tooltip_exit)
+                    .build()
+            )
         }
 
         override fun onSelect(pokemonItem: PokemonItem) {
@@ -72,9 +85,14 @@ class PokemonListFragment : Fragment(), HasCustomTitle, HasCustomAction {
         }
     }
 
-    companion object {
-        @JvmStatic
-        fun newInstance() = PokemonListFragment()
+    private fun updateActionListener() {
+        with(binding.progressCircular) {
+            visibility = if (visibility == View.VISIBLE) {
+                View.GONE
+            } else {
+                View.VISIBLE
+            }
+        }
     }
 
     override fun getTitleRes(): Int = R.string.app_name
