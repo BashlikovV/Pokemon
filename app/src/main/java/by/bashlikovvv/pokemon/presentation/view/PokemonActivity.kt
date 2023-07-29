@@ -7,6 +7,10 @@ import android.view.MenuItem
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.core.graphics.drawable.DrawableCompat
+import androidx.navigation.findNavController
+import androidx.navigation.fragment.NavHostFragment
+import androidx.navigation.ui.AppBarConfiguration
+import androidx.navigation.ui.navigateUp
 import by.bashlikovvv.pokemon.R
 import by.bashlikovvv.pokemon.data.di.DataModule
 import by.bashlikovvv.pokemon.databinding.ActivityPokemonBinding
@@ -17,6 +21,7 @@ import by.bashlikovvv.pokemon.presentation.contract.HasCustomTitle
 class PokemonActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityPokemonBinding
+    private lateinit var appBarConfiguration: AppBarConfiguration
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -24,19 +29,9 @@ class PokemonActivity : AppCompatActivity() {
         setContentView(binding.root)
         DataModule.init(this)
         setSupportActionBar(binding.toolbar)
-
-        setUpFragment(savedInstanceState)
-    }
-
-    private fun setUpFragment(savedInstanceState: Bundle?) {
-        if (savedInstanceState == null) {
-            val fragment = PokemonListFragment.newInstance()
-
-            supportFragmentManager
-                .beginTransaction()
-                .add(R.id.fragment_container, fragment)
-                .commit()
-        }
+        val navHostFragment = supportFragmentManager.findFragmentById(R.id.fragment_container) as NavHostFragment
+        val navController = navHostFragment.navController
+        appBarConfiguration = AppBarConfiguration(navController.graph)
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
@@ -72,5 +67,15 @@ class PokemonActivity : AppCompatActivity() {
             action.onCustomAction.run()
             return@setOnMenuItemClickListener true
         }
+    }
+
+    override fun onRestart() {
+        super.onRestart()
+        DataModule.init(this)
+    }
+
+    override fun onSupportNavigateUp(): Boolean {
+        val navController = findNavController(R.id.fragment_container)
+        return navController.navigateUp(appBarConfiguration) || super.onSupportNavigateUp()
     }
 }
