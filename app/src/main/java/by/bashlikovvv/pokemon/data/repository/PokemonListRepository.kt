@@ -1,13 +1,8 @@
 package by.bashlikovvv.pokemon.data.repository
 
-import android.content.Context
 import android.graphics.Bitmap
-import android.graphics.Canvas
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
-import androidx.core.content.ContextCompat
-import by.bashlikovvv.pokemon.R
-import by.bashlikovvv.pokemon.data.di.DataModule
 import by.bashlikovvv.pokemon.data.mapper.PokemonDetailsDtoMapper
 import by.bashlikovvv.pokemon.data.mapper.PokemonDtoMapper
 import by.bashlikovvv.pokemon.data.remote.PokemonDetailsApi
@@ -17,11 +12,7 @@ import by.bashlikovvv.pokemon.domain.model.PokemonItem
 import by.bashlikovvv.pokemon.domain.model.SpriteNames
 import by.bashlikovvv.pokemon.domain.model.Sprites
 import by.bashlikovvv.pokemon.domain.repository.IPokemonListRepository
-import com.bumptech.glide.Glide
-import com.bumptech.glide.load.resource.bitmap.CenterCrop
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
-import java.util.concurrent.ExecutionException
+import by.bashlikovvv.pokemon.utils.getBitmapWithGlide
 
 class PokemonListRepository(
     private val cm: ConnectivityManager?,
@@ -73,44 +64,8 @@ class PokemonListRepository(
 
     private suspend fun getSprites(spritesDto: SpritesDto): Sprites {
         val sprites = mutableMapOf<String, Bitmap?>()
-        sprites[SpriteNames.BackDefault().name] = getBitmapWithGlide(spritesDto.backDefault)
-        sprites[SpriteNames.BackFemale().name] = getBitmapWithGlide(spritesDto.backFemale)
-        sprites[SpriteNames.BackShiny().name] = getBitmapWithGlide(spritesDto.backShiny)
-        sprites[SpriteNames.BackShinyFemale().name] = getBitmapWithGlide(spritesDto.backShinyFemale)
-        sprites[SpriteNames.FrontDefault().name] = getBitmapWithGlide(spritesDto.frontDefault)
-        sprites[SpriteNames.FrontFemale().name] = getBitmapWithGlide(spritesDto.frontFemale)
         sprites[SpriteNames.FrontShiny().name] = getBitmapWithGlide(spritesDto.frontShiny)
-        sprites[SpriteNames.FrontShinyFemale().name] = getBitmapWithGlide(spritesDto.frontShinyFemale)
 
         return Sprites(sprites)
-    }
-
-    private suspend fun getBitmapWithGlide(url: String) = withContext(Dispatchers.IO) {
-        return@withContext try {
-            val  result = Glide.with(DataModule.applicationContext)
-                .asBitmap()
-                .load(url)
-                .transform(CenterCrop())
-                .submit()
-                .get()
-
-            result ?: R.drawable.baseline_error_24.getBitmapFromImage(DataModule.applicationContext)
-        } catch (e: ExecutionException) {
-            R.drawable.baseline_error_24.getBitmapFromImage(DataModule.applicationContext)
-        } catch (e: InterruptedException) {
-            R.drawable.baseline_error_24.getBitmapFromImage(DataModule.applicationContext)
-        }
-    }
-
-    private fun Int.getBitmapFromImage(context: Context): Bitmap {
-        val db = ContextCompat.getDrawable(context, this)
-        val bit = Bitmap.createBitmap(
-            db!!.intrinsicWidth, db.intrinsicHeight, Bitmap.Config.ARGB_8888
-        )
-        val canvas = Canvas(bit)
-        db.setBounds(0, 0, canvas.width, canvas.height)
-        db.draw(canvas)
-
-        return bit
     }
 }
