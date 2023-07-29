@@ -65,7 +65,12 @@ class PokemonListAdapter(
         val item = v.tag as PokemonItem
         when (v.id) {
             R.id.pokemon_list_item -> {
-                actionListener.onOpen(item)
+                if (selectedPokemonItem.containsValue(true)) {
+                    onLongClick(v)
+                } else {
+                    selectedPokemonItem.clear()
+                    actionListener.onOpen(item)
+                }
             }
         }
     }
