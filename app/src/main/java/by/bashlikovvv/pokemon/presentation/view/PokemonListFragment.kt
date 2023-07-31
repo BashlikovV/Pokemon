@@ -31,7 +31,7 @@ class PokemonListFragment : Fragment(), HasCustomTitle, HasCustomAction {
 
     private val viewModel: PokemonListViewModel by viewModelCreator {
         PokemonListViewModel(DataModule.providePokemonListUseCase(requireContext())) {
-            updateActionListener()
+            updateActionListener(it)
         }
     }
 
@@ -85,12 +85,12 @@ class PokemonListFragment : Fragment(), HasCustomTitle, HasCustomAction {
         }
     }
 
-    private fun updateActionListener() {
+    private fun updateActionListener(value: Boolean) {
         with(binding.progressCircular) {
-            visibility = if (visibility == View.VISIBLE) {
-                View.GONE
-            } else {
+            visibility = if (value) {
                 View.VISIBLE
+            } else {
+                View.GONE
             }
         }
     }
