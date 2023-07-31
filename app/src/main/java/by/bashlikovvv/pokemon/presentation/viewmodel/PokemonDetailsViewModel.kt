@@ -10,17 +10,16 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 class PokemonDetailsViewModel(
-    private val getPokemonDetailsByIdUseCase: GetPokemonDetailsByIdUseCase,
-    private val updateActionListener: UpdateActionListener
+    private val getPokemonDetailsByIdUseCase: GetPokemonDetailsByIdUseCase
 ) : ViewModel() {
 
     private val _pokemonDetails = MutableStateFlow(PokemonDetails())
     val pokemonDetails = _pokemonDetails.asStateFlow()
 
-    fun loadDetails(id: Int) {
+    fun loadDetails(id: Int, updateActionListener: UpdateActionListener) {
         viewModelScope.launch {
-            updateActionListener.invoke()
+            updateActionListener.invoke(true)
             _pokemonDetails.update { getPokemonDetailsByIdUseCase.getDetails(id) }
-        }.invokeOnCompletion { updateActionListener.invoke() }
+        }.invokeOnCompletion { updateActionListener.invoke(false) }
     }
 }
