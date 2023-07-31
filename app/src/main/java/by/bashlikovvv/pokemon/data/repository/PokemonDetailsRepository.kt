@@ -58,6 +58,14 @@ class PokemonDetailsRepository(
         sprites[SpriteNames.FrontFemale().name] = getBitmapWithGlide(spritesDto.frontFemale)
         sprites[SpriteNames.FrontShiny().name] = getBitmapWithGlide(spritesDto.frontShiny)
         sprites[SpriteNames.FrontShinyFemale().name] = getBitmapWithGlide(spritesDto.frontShinyFemale)
+        sprites[SpriteNames.Other.DreamWorld.FrontFemale().component1] = getBitmapWithGlide(spritesDto.other.dreamWorld.frontFemale)
+        sprites[SpriteNames.Other.DreamWorld.FrontDefault().component1] = getBitmapWithGlide(spritesDto.other.dreamWorld.frontDefault)
+        sprites[SpriteNames.Other.OfficialArtwork.FrontDefault().component1] = getBitmapWithGlide(spritesDto.other.officialArtworkDto.frontDefault)
+        sprites[SpriteNames.Other.OfficialArtwork.FrontShiny().component1] = getBitmapWithGlide(spritesDto.other.officialArtworkDto.frontShiny)
+        sprites[SpriteNames.Other.Home.FrontDefault().component1] = getBitmapWithGlide(spritesDto.other.home.frontDefault)
+        sprites[SpriteNames.Other.Home.FrontFemale().component1] = getBitmapWithGlide(spritesDto.other.home.frontFemale)
+        sprites[SpriteNames.Other.Home.FrontShinyFemale().component1] = getBitmapWithGlide(spritesDto.other.home.frontShinyFemale)
+        sprites[SpriteNames.Other.Home.FrontShiny().component1] = getBitmapWithGlide(spritesDto.other.home.frontShiny)
 
         return Sprites(sprites)
     }
