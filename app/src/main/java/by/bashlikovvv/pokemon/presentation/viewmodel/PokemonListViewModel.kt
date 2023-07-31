@@ -10,7 +10,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 fun interface UpdateActionListener {
-    fun invoke()
+    fun invoke(value: Boolean)
 }
 
 class PokemonListViewModel(
@@ -23,8 +23,8 @@ class PokemonListViewModel(
 
     init {
         viewModelScope.launch {
-            updateActionListener.invoke()
+            updateActionListener.invoke(true)
             _pokemon.update { getPokemonByListUseCase.execute() }
-        }.invokeOnCompletion { updateActionListener.invoke() }
+        }.invokeOnCompletion { updateActionListener.invoke(false) }
     }
 }
