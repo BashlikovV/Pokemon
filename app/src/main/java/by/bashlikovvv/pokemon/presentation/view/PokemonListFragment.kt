@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.appcompat.app.AppCompatActivity
 import androidx.core.os.bundleOf
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
@@ -19,13 +20,12 @@ import by.bashlikovvv.pokemon.presentation.adapters.PokemonListAdapter
 import by.bashlikovvv.pokemon.presentation.adapters.UserActionListener
 import by.bashlikovvv.pokemon.presentation.contract.CustomAction
 import by.bashlikovvv.pokemon.presentation.contract.HasCustomAction
-import by.bashlikovvv.pokemon.presentation.contract.HasCustomTitle
 import by.bashlikovvv.pokemon.presentation.viewmodel.PokemonListViewModel
 import by.bashlikovvv.pokemon.utils.viewModelCreator
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 
-class PokemonListFragment : Fragment(), HasCustomTitle, HasCustomAction {
+class PokemonListFragment : Fragment(), HasCustomAction {
 
     private lateinit var binding: FragmentPokemonListBinding
 
@@ -55,6 +55,10 @@ class PokemonListFragment : Fragment(), HasCustomTitle, HasCustomAction {
     }
 
     private fun setUpRecyclerView() {
+        (requireContext() as AppCompatActivity).apply {
+            supportActionBar?.title = getText(R.string.app_name)
+            /*supportActionBar?.setCustomView()*/
+        }
         val layoutManager = LinearLayoutManager(requireContext()).apply {
             orientation = VERTICAL
         }
@@ -94,8 +98,6 @@ class PokemonListFragment : Fragment(), HasCustomTitle, HasCustomAction {
             }
         }
     }
-
-    override fun getTitleRes(): Int = R.string.app_name
 
     override fun getCustomAction(): CustomAction = adapter.deleteCustomAction
 }
