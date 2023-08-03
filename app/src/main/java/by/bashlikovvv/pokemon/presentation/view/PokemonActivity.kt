@@ -16,7 +16,6 @@ import by.bashlikovvv.pokemon.data.di.DataModule
 import by.bashlikovvv.pokemon.databinding.ActivityPokemonBinding
 import by.bashlikovvv.pokemon.presentation.contract.CustomAction
 import by.bashlikovvv.pokemon.presentation.contract.HasCustomAction
-import by.bashlikovvv.pokemon.presentation.contract.HasCustomTitle
 
 class PokemonActivity : AppCompatActivity() {
 
@@ -42,11 +41,6 @@ class PokemonActivity : AppCompatActivity() {
     private fun updateUi() {
         val fragment = supportFragmentManager.findFragmentById(R.id.fragment_container)!!
 
-        if (fragment is HasCustomTitle) {
-            binding.toolbar.title = getString(fragment.getTitleRes())
-        } else {
-            binding.toolbar.title = getString(R.string.app_name)
-        }
         if (fragment is HasCustomAction) {
             createCustomToolbarAction(fragment.getCustomAction())
         } else {
