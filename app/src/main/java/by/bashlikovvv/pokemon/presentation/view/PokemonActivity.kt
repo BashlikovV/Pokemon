@@ -11,6 +11,7 @@ import androidx.navigation.findNavController
 import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.navigateUp
+import androidx.navigation.ui.setupActionBarWithNavController
 import by.bashlikovvv.pokemon.R
 import by.bashlikovvv.pokemon.data.di.DataModule
 import by.bashlikovvv.pokemon.databinding.ActivityPokemonBinding
@@ -28,9 +29,14 @@ class PokemonActivity : AppCompatActivity() {
         setContentView(binding.root)
         DataModule.init(this)
         setSupportActionBar(binding.toolbar)
+        setUpActionBarNavigation()
+    }
+
+    private fun setUpActionBarNavigation() {
         val navHostFragment = supportFragmentManager.findFragmentById(R.id.fragment_container) as NavHostFragment
         val navController = navHostFragment.navController
         appBarConfiguration = AppBarConfiguration(navController.graph)
+        setupActionBarWithNavController(navController, appBarConfiguration)
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
