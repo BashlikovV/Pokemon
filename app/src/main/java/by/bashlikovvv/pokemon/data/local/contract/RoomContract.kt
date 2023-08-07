@@ -2,6 +2,8 @@ package by.bashlikovvv.pokemon.data.local.contract
 
 object RoomContract {
 
+    const val DATABASE_NAME = "pokemon.room"
+
     object PageTable {
         const val TABLE_NAME = "pages"
         const val COLUMN_NAME = "name"

@@ -3,9 +3,11 @@ package by.bashlikovvv.pokemon.data.repository
 import android.graphics.Bitmap
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
-import by.bashlikovvv.pokemon.data.NetworkException
+import by.bashlikovvv.pokemon.data.DetailsNotFoundException
 import by.bashlikovvv.pokemon.data.di.DataModule
+import by.bashlikovvv.pokemon.data.local.dao.PokemonDetailsDao
 import by.bashlikovvv.pokemon.data.mapper.PokemonDetailsDtoMapper
+import by.bashlikovvv.pokemon.data.mapper.PokemonDetailsEntityMapper
 import by.bashlikovvv.pokemon.data.remote.PokemonDetailsApi
 import by.bashlikovvv.pokemon.data.remote.response.SpritesDto
 import by.bashlikovvv.pokemon.domain.model.PokemonDetails
@@ -17,25 +19,44 @@ import com.bumptech.glide.load.resource.bitmap.CenterCrop
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.util.concurrent.ExecutionException
+import kotlin.jvm.Throws
 
 class PokemonDetailsRepository(
     private val cm: ConnectivityManager?,
-    private val pokemonDetailsApi: PokemonDetailsApi
+    private val pokemonDetailsApi: PokemonDetailsApi,
+    private val pokemonDetailsDao: PokemonDetailsDao
 ) : IPokemonDetailsRepository {
 
+    private val pokemonDetailsEntityMapper = PokemonDetailsEntityMapper()
+
+    @Throws(DetailsNotFoundException::class)
     override suspend fun getDetails(id: Int): PokemonDetails {
-        return apiGetDetails(id)
+        return if (isConnected()) {
+            getDetailsOnline(id)
+        } else {
+            getDetailsOffline(id)
+        }
     }
 
-    private suspend fun apiGetDetails(id: Int): PokemonDetails {
-        return if (isConnected()) {
-            val pokemonDetailsResponse = pokemonDetailsApi.getPokemonDetailsById(id)
-            val pokemonDetailsDto = pokemonDetailsResponse.body()!!
-            val pokemonDetailsDtoMapper = PokemonDetailsDtoMapper(getSprites(pokemonDetailsDto.spritesDto))
-            pokemonDetailsDtoMapper.mapFromEntity(pokemonDetailsDto)
-        } else {
-            throw NetworkException()
+    @Throws(DetailsNotFoundException::class)
+    private suspend fun getDetailsOnline(id: Int): PokemonDetails {
+        val pokemonDetailsResponse = pokemonDetailsApi.getPokemonDetailsById(id)
+        val pokemonDetailsDto = pokemonDetailsResponse.body()!!
+        val pokemonDetailsDtoMapper = PokemonDetailsDtoMapper(getSprites(pokemonDetailsDto.spritesDto))
+        val result = pokemonDetailsDtoMapper.mapFromEntity(pokemonDetailsDto)
+
+        withContext(Dispatchers.Default) {
+            pokemonDetailsDao.insertDetails(pokemonDetailsEntityMapper.mapToEntity(result))
         }
+
+        return result
+    }
+
+    @Throws(DetailsNotFoundException::class)
+    private suspend fun getDetailsOffline(id: Int): PokemonDetails {
+        return pokemonDetailsEntityMapper.mapFromEntity(
+            pokemonDetailsDao.selectDetails(id) ?: throw DetailsNotFoundException()
+        )
     }
 
     private fun isConnected(): Boolean {

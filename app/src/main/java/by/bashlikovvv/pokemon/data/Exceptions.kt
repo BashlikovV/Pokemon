@@ -7,4 +7,4 @@ sealed class AppException : RuntimeException {
     constructor(cause: Throwable) : super(cause)
 }
 
-class NetworkException : AppException()
+class DetailsNotFoundException : AppException()

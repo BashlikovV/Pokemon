@@ -3,7 +3,7 @@ package by.bashlikovvv.pokemon.domain.model
 import android.graphics.Bitmap
 
 data class PokemonDetails(
-    val id: Long = 0,
+    val id: Int = 0,
     val name: String = "",
     val sprites: Sprites = Sprites(emptyMap()),
     val types: List<String> = emptyList(),

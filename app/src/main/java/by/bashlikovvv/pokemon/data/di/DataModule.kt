@@ -2,6 +2,9 @@ package by.bashlikovvv.pokemon.data.di
 
 import android.content.Context
 import android.net.ConnectivityManager
+import androidx.room.Room
+import by.bashlikovvv.pokemon.data.local.PokemonDatabase
+import by.bashlikovvv.pokemon.data.local.contract.RoomContract
 import by.bashlikovvv.pokemon.data.remote.PokemonDetailsApi
 import by.bashlikovvv.pokemon.data.remote.PokemonListApi
 import by.bashlikovvv.pokemon.data.repository.PokemonDetailsRepository
@@ -39,9 +42,18 @@ object DataModule {
         return context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager?
     }
 
+    private fun providePokemonDatabase(ctx: Context): PokemonDatabase {
+        return Room.databaseBuilder(
+            ctx,
+            PokemonDatabase::class.java,
+            RoomContract.DATABASE_NAME
+        ).build()
+    }
+
     private fun providePokemonListRepository(context: Context): PokemonListRepository {
         return PokemonListRepository(
-             provideConnectivityManager(context), providePokemonListApi(), providePokemonDetailsApi()
+            provideConnectivityManager(context), providePokemonListApi(),
+            providePokemonDetailsApi(), providePokemonDatabase(context).pokemonPageDao
         )
     }
 
@@ -51,7 +63,8 @@ object DataModule {
 
     private fun providePokemonDetailsRepository(context: Context): PokemonDetailsRepository {
         return PokemonDetailsRepository(
-            provideConnectivityManager(context), providePokemonDetailsApi()
+            provideConnectivityManager(context), providePokemonDetailsApi(),
+            providePokemonDatabase(context).pokemonDetailsDao
         )
     }
 

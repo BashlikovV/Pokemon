@@ -5,8 +5,10 @@ import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
 import by.bashlikovvv.pokemon.R
 import by.bashlikovvv.pokemon.data.di.DataModule
+import by.bashlikovvv.pokemon.data.local.dao.PokemonPageDao
 import by.bashlikovvv.pokemon.data.mapper.PokemonDetailsDtoMapper
 import by.bashlikovvv.pokemon.data.mapper.PokemonDtoMapper
+import by.bashlikovvv.pokemon.data.mapper.PokemonItemEntityMapper
 import by.bashlikovvv.pokemon.data.remote.PokemonDetailsApi
 import by.bashlikovvv.pokemon.data.remote.PokemonListApi
 import by.bashlikovvv.pokemon.data.remote.response.SpritesDto
@@ -24,33 +26,48 @@ import java.util.concurrent.ExecutionException
 class PokemonListRepository(
     private val cm: ConnectivityManager?,
     private val pokemonListApi: PokemonListApi,
-    private val pokemonDetailsApi: PokemonDetailsApi
+    private val pokemonDetailsApi: PokemonDetailsApi,
+    private val pokemonPageDao: PokemonPageDao
 ) : IPokemonListRepository {
 
     private val pokemonDtoMapper = PokemonDtoMapper()
 
+    private val pokemonItemEntityMapper = PokemonItemEntityMapper()
+
     override suspend fun getList(): List<PokemonItem> {
-        return  apiGetList()
+        return if (isConnected()) {
+            getListOnline()
+        } else {
+            getListOffline()
+        }
     }
 
-    private suspend fun apiGetList(): List<PokemonItem> {
-        return if (isConnected()) {
-            val pokemonListResponse = pokemonListApi.getPokemonList()
-            val result = pokemonListResponse.body()!!.results.map {
-                pokemonDtoMapper.mapFromEntity(it)
-            }
-            result.forEach {
-                val body = pokemonDetailsApi.getPokemonDetailsById(it.id)
-                val pokemonDetailsDto = body.body()!!
-                val sprites = PokemonDetailsDtoMapper(
-                    getSprites(pokemonDetailsDto.spritesDto)
-                ).mapFromEntity(pokemonDetailsDto).sprites.sprites
-                it.sprites.putAll(sprites)
-            }
+    private suspend fun getListOnline(): List<PokemonItem> {
+        val pokemonListResponse = pokemonListApi.getPokemonList()
+        val result = pokemonListResponse.body()!!.results.map {
+            pokemonDtoMapper.mapFromEntity(it)
+        }
+        result.forEach {
+            val body = pokemonDetailsApi.getPokemonDetailsById(it.id)
+            val pokemonDetailsDto = body.body()!!
+            val sprites = PokemonDetailsDtoMapper(
+                getSprites(pokemonDetailsDto.spritesDto)
+            ).mapFromEntity(pokemonDetailsDto).sprites.sprites
+            it.sprites.putAll(sprites)
+        }
 
-            return result
-        } else {
-            listOf()
+        withContext(Dispatchers.Default) {
+            pokemonPageDao.insertItems(result.map {
+                pokemonItemEntityMapper.mapToEntity(it)
+            })
+        }
+
+        return result
+    }
+
+    private suspend fun getListOffline(): List<PokemonItem> {
+        return pokemonPageDao.selectItemsOnline().map {
+            pokemonItemEntityMapper.mapFromEntity(it)
         }
     }
 

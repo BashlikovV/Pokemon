@@ -11,7 +11,7 @@ import by.bashlikovvv.pokemon.data.local.model.PokemonItemEntity
 interface PokemonPageDao {
 
     @Query("SELECT * FROM ${PageTable.TABLE_NAME}")
-    suspend fun selectItemsOnline(): PokemonItemEntity
+    suspend fun selectItemsOnline(): List<PokemonItemEntity>
 
     /*@Transaction
     @Query("SELECT * FROM ${PageTable.TABLE_NAME} WHERE ${PageTable.COLUMN_ID} IN (SELECT details_id FROM details)")

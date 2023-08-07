@@ -10,7 +10,7 @@ class PokemonDetailsDtoMapper(
     override fun mapFromEntity(entity: PokemonDetailsDto): PokemonDetails {
 
         return PokemonDetails(
-            id = entity.id.toLong(),
+            id = entity.id,
             name = entity.name,
             sprites = sprites,
             types = TypeDtoMapper().mapFromEntity(entity.types),
