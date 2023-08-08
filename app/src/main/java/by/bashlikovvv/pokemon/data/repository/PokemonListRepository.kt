@@ -4,7 +4,6 @@ import android.graphics.Bitmap
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
 import by.bashlikovvv.pokemon.R
-import by.bashlikovvv.pokemon.data.di.DataModule
 import by.bashlikovvv.pokemon.data.local.dao.PokemonPageDao
 import by.bashlikovvv.pokemon.data.mapper.PokemonDetailsDtoMapper
 import by.bashlikovvv.pokemon.data.mapper.PokemonDtoMapper
@@ -16,6 +15,7 @@ import by.bashlikovvv.pokemon.domain.model.PokemonItem
 import by.bashlikovvv.pokemon.domain.model.SpriteNames
 import by.bashlikovvv.pokemon.domain.model.Sprites
 import by.bashlikovvv.pokemon.domain.repository.IPokemonListRepository
+import by.bashlikovvv.pokemon.presentation.App
 import by.bashlikovvv.pokemon.utils.getBitmapFromImage
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.resource.bitmap.CenterCrop
@@ -95,18 +95,18 @@ class PokemonListRepository(
 
     private suspend fun getBitmapWithGlide(url: String?) = withContext(Dispatchers.IO) {
         return@withContext try {
-            val result = Glide.with(DataModule.applicationContext!!)
+            val result = Glide.with(App.instance)
                 .asBitmap()
                 .load(url)
                 .transform(CenterCrop())
                 .submit()
                 .get()
 
-            result ?: R.drawable.baseline_error_24.getBitmapFromImage(DataModule.applicationContext!!)
+            result ?: R.drawable.baseline_error_24.getBitmapFromImage(App.instance)
         } catch (e: ExecutionException) {
-            R.drawable.baseline_error_24.getBitmapFromImage(DataModule.applicationContext!!)
+            R.drawable.baseline_error_24.getBitmapFromImage(App.instance)
         } catch (e: InterruptedException) {
-            R.drawable.baseline_error_24.getBitmapFromImage(DataModule.applicationContext!!)
+            R.drawable.baseline_error_24.getBitmapFromImage(App.instance)
         }
     }
 }
