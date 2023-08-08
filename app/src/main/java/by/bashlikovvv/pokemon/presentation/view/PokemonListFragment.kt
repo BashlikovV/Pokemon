@@ -58,7 +58,6 @@ class PokemonListFragment : Fragment(), HasCustomAction {
     private fun setUpRecyclerView() {
         (requireContext() as AppCompatActivity).apply {
             supportActionBar?.title = getText(R.string.app_name)
-            /*supportActionBar?.setCustomView()*/
         }
         val layoutManager = LinearLayoutManager(requireContext()).apply {
             orientation = VERTICAL
