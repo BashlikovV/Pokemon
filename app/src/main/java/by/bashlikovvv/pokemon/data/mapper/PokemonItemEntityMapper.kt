@@ -1,7 +1,6 @@
 package by.bashlikovvv.pokemon.data.mapper
 
 import by.bashlikovvv.pokemon.R
-import by.bashlikovvv.pokemon.data.di.DataModule
 import by.bashlikovvv.pokemon.data.local.model.PokemonItemEntity
 import by.bashlikovvv.pokemon.domain.model.PokemonItem
 import by.bashlikovvv.pokemon.domain.model.SpriteNames
@@ -19,7 +18,7 @@ class PokemonItemEntityMapper : Mapper<PokemonItemEntity, PokemonItem> {
     override fun mapToEntity(domain: PokemonItem): PokemonItemEntity {
         return PokemonItemEntity(
             name = domain.name,
-            sprite = domain.sprites[SpriteNames.FrontShiny().name] ?: R.drawable.baseline_error_24.getBitmapFromImage(DataModule.applicationContext!!),
+            sprite = domain.sprites[SpriteNames.FrontShiny().name] ?: R.drawable.baseline_error_24.getBitmapFromImage(),
             id = domain.id
         )
     }

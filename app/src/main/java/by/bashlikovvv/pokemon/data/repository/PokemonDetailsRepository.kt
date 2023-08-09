@@ -4,7 +4,6 @@ import android.graphics.Bitmap
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
 import by.bashlikovvv.pokemon.data.DetailsNotFoundException
-import by.bashlikovvv.pokemon.data.di.DataModule
 import by.bashlikovvv.pokemon.data.local.dao.PokemonDetailsDao
 import by.bashlikovvv.pokemon.data.mapper.PokemonDetailsDtoMapper
 import by.bashlikovvv.pokemon.data.mapper.PokemonDetailsEntityMapper
@@ -14,12 +13,12 @@ import by.bashlikovvv.pokemon.domain.model.PokemonDetails
 import by.bashlikovvv.pokemon.domain.model.SpriteNames
 import by.bashlikovvv.pokemon.domain.model.Sprites
 import by.bashlikovvv.pokemon.domain.repository.IPokemonDetailsRepository
+import by.bashlikovvv.pokemon.presentation.App
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.resource.bitmap.CenterCrop
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.util.concurrent.ExecutionException
-import kotlin.jvm.Throws
 
 class PokemonDetailsRepository(
     private val cm: ConnectivityManager?,
@@ -99,7 +98,7 @@ class PokemonDetailsRepository(
     private suspend fun getBitmapWithGlide(url: String?) = withContext(Dispatchers.IO) {
         if (url.isNullOrEmpty()) { return@withContext null }
         return@withContext try {
-            val result = Glide.with(DataModule.applicationContext!!)
+            val result = Glide.with(App.instance)
                 .asBitmap()
                 .load(url)
                 .transform(CenterCrop())

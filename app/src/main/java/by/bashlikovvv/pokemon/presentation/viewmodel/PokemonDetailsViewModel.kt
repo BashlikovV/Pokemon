@@ -4,7 +4,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import by.bashlikovvv.pokemon.R
 import by.bashlikovvv.pokemon.data.DetailsNotFoundException
-import by.bashlikovvv.pokemon.data.di.DataModule
 import by.bashlikovvv.pokemon.domain.model.PokemonDetails
 import by.bashlikovvv.pokemon.domain.model.SpriteNames
 import by.bashlikovvv.pokemon.domain.model.Sprites
@@ -29,7 +28,7 @@ class PokemonDetailsViewModel(
                 try {
                     getPokemonDetailsByIdUseCase.getDetails(id)
                 } catch (e: DetailsNotFoundException) {
-                    val bm = R.drawable.baseline_error_24.getBitmapFromImage(DataModule.applicationContext!!)
+                    val bm = R.drawable.baseline_error_24.getBitmapFromImage()
                     val sprites = mapOf(SpriteNames.FrontShiny().name to bm)
 
                     PokemonDetails(name = e.message ?: "", sprites = Sprites(sprites))

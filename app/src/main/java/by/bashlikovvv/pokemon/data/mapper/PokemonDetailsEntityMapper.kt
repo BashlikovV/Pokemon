@@ -1,7 +1,6 @@
 package by.bashlikovvv.pokemon.data.mapper
 
 import by.bashlikovvv.pokemon.R
-import by.bashlikovvv.pokemon.data.di.DataModule
 import by.bashlikovvv.pokemon.data.local.model.PokemonDetailsEntity
 import by.bashlikovvv.pokemon.domain.model.PokemonDetails
 import by.bashlikovvv.pokemon.domain.model.SpriteNames
@@ -22,7 +21,7 @@ class PokemonDetailsEntityMapper : Mapper<PokemonDetailsEntity, PokemonDetails> 
 
     override fun mapToEntity(domain: PokemonDetails): PokemonDetailsEntity {
         val sprite = domain.sprites.sprites[SpriteNames.FrontShiny().name] ?:
-            R.drawable.baseline_error_24.getBitmapFromImage(DataModule.applicationContext!!)
+            R.drawable.baseline_error_24.getBitmapFromImage()
 
         return PokemonDetailsEntity(
             id = domain.id,

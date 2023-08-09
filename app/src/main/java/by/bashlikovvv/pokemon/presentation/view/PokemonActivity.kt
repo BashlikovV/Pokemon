@@ -1,6 +1,5 @@
 package by.bashlikovvv.pokemon.presentation.view
 
-import android.graphics.Color
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
@@ -13,7 +12,6 @@ import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.navigateUp
 import androidx.navigation.ui.setupActionBarWithNavController
 import by.bashlikovvv.pokemon.R
-import by.bashlikovvv.pokemon.data.di.DataModule
 import by.bashlikovvv.pokemon.databinding.ActivityPokemonBinding
 import by.bashlikovvv.pokemon.presentation.contract.CustomAction
 import by.bashlikovvv.pokemon.presentation.contract.HasCustomAction
@@ -27,7 +25,6 @@ class PokemonActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityPokemonBinding.inflate(layoutInflater)
         setContentView(binding.root)
-        DataModule.init(this)
         setSupportActionBar(binding.toolbar)
         setUpActionBarNavigation()
     }
@@ -58,7 +55,6 @@ class PokemonActivity : AppCompatActivity() {
         binding.toolbar.menu.clear()
 
         val iconDrawable = DrawableCompat.wrap(ContextCompat.getDrawable(this, action.iconRes)!!)
-        iconDrawable.setTint(Color.WHITE)
 
         val menuItem = binding.toolbar.menu.add(action.textRes)
         menuItem.setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS)
@@ -67,11 +63,6 @@ class PokemonActivity : AppCompatActivity() {
             action.onCustomAction.run()
             return@setOnMenuItemClickListener true
         }
-    }
-
-    override fun onRestart() {
-        super.onRestart()
-        DataModule.init(this)
     }
 
     override fun onSupportNavigateUp(): Boolean {

@@ -18,8 +18,6 @@ import retrofit2.converter.gson.GsonConverterFactory
 
 object DataModule {
 
-    var applicationContext: Context? = null
-
     private fun provideOkHttpClient(): OkHttpClient {
         return OkHttpClient.Builder().build()
     }
@@ -70,9 +68,5 @@ object DataModule {
 
     fun providePokemonDetailsUseCase(context: Context): GetPokemonDetailsByIdUseCase {
         return GetPokemonDetailsByIdUseCase(providePokemonDetailsRepository(context))
-    }
-
-    fun init(context: Context) {
-        applicationContext = context
     }
 }
