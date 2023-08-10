@@ -23,7 +23,7 @@ class PokemonDetailsViewModel(
 
     fun loadDetails(id: Int, updateActionListener: UpdateActionListener) {
         viewModelScope.launch {
-            updateActionListener.invoke(true)
+            updateActionListener.updateActionListener(true)
             _pokemonDetails.update {
                 try {
                     getPokemonDetailsByIdUseCase.getDetails(id)
@@ -34,6 +34,10 @@ class PokemonDetailsViewModel(
                     PokemonDetails(name = e.message ?: "", sprites = Sprites(sprites))
                 }
             }
-        }.invokeOnCompletion { updateActionListener.invoke(false) }
+        }.invokeOnCompletion { updateActionListener.updateActionListener(false) }
     }
+}
+
+fun interface UpdateActionListener {
+    fun updateActionListener(value: Boolean)
 }

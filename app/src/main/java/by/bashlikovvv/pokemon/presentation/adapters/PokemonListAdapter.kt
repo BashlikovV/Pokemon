@@ -1,15 +1,16 @@
 package by.bashlikovvv.pokemon.presentation.adapters
 
+import android.content.Context
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.paging.PagingDataAdapter
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import by.bashlikovvv.pokemon.R
 import by.bashlikovvv.pokemon.databinding.PokemonListItemBinding
 import by.bashlikovvv.pokemon.domain.model.PokemonItem
 import by.bashlikovvv.pokemon.domain.model.SpriteNames
-import by.bashlikovvv.pokemon.presentation.contract.CustomAction
 
 interface UserActionListener {
 
@@ -18,97 +19,79 @@ interface UserActionListener {
     fun onSelect(pokemonItem: PokemonItem)
 }
 
-class PokemonListAdapter(
-    private val actionListener: UserActionListener
-) : RecyclerView.Adapter<PokemonListAdapter.PokemonListHolder>(), View.OnClickListener, View.OnLongClickListener {
+class PokemonListAdapter(context: Context) :
+    PagingDataAdapter<PokemonItem, PokemonListAdapter.PokemonListHolder>(PokemonDiffItemCallback) {
 
-    private var pokemon: List<PokemonItem> = emptyList()
+    private val layoutInflater = LayoutInflater.from(context)
+
+    private var onItemListener: UserActionListener? = null
 
     private var selectedPokemonItem: MutableMap<PokemonItem, Boolean> = mutableMapOf()
 
-    val deleteCustomAction = CustomAction(
-        iconRes = R.drawable.baseline_delete_outline_24,
-        textRes = R.string.remove
-    ) { removePokemon() }
+    override fun onBindViewHolder(holder: PokemonListHolder, position: Int) {
+        return holder.bind(getItem(position))
+    }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): PokemonListHolder {
-        val inflater = LayoutInflater.from(parent.context)
-        val binding = PokemonListItemBinding.inflate(inflater, parent, false)
-
-        binding.root.setOnClickListener(this)
-        binding.root.setOnLongClickListener(this)
-
-        return PokemonListHolder(binding)
+        return PokemonListHolder(layoutInflater.inflate(R.layout.pokemon_list_item, parent, false))
     }
 
-    override fun getItemCount(): Int = pokemon.size
+    inner class PokemonListHolder(
+        view: View
+    ) : RecyclerView.ViewHolder(view) {
 
-    override fun onBindViewHolder(holder: PokemonListHolder, position: Int) {
-        val item = pokemon[position]
-        with(holder.binding) {
-            pokemonListItem.tag = item
-            pokemonSprite.setImageBitmap(item.sprites[SpriteNames.FrontShiny().name])
-            pokemonName.text = item.name
-            if (selectedPokemonItem[item] == true) {
-                selectIndicator.visibility = View.VISIBLE
-            } else {
-                selectIndicator.visibility = View.INVISIBLE
-            }
-        }
-    }
+        private val binding = PokemonListItemBinding.bind(view)
 
-    class PokemonListHolder(
-        val binding: PokemonListItemBinding
-    ) : RecyclerView.ViewHolder(binding.root)
-
-    override fun onClick(v: View) {
-        val item = v.tag as PokemonItem
-        when (v.id) {
-            R.id.pokemon_list_item -> {
-                if (selectedPokemonItem.containsValue(true)) {
-                    onLongClick(v)
+        fun bind(item: PokemonItem?) {
+            if (item == null) return
+            with(binding) {
+                pokemonListItem.tag = item
+                pokemonName.text = item.name.replaceFirstChar { it.uppercase() }
+                pokemonSprite.setImageBitmap(item.sprites[SpriteNames.FrontShiny().name])
+                if (selectedPokemonItem[item] == true) {
+                    selectIndicator.visibility = View.VISIBLE
                 } else {
-                    selectedPokemonItem.clear()
-                    actionListener.onOpen(item)
+                    selectIndicator.visibility = View.INVISIBLE
                 }
             }
+            itemView.setOnClickListener { onClickListener(item) }
+            itemView.setOnLongClickListener {
+                onLongClickListener(item)
+            }
         }
     }
 
-    fun setPokemon(pokemonItem: List<PokemonItem>) {
-        val diffCallback = PokemonDiffCallback(
-            oldList = this.pokemon, newList = pokemonItem
-        )
-        val diffResult = DiffUtil.calculateDiff(diffCallback)
-        this.pokemon = pokemonItem
-        diffResult.dispatchUpdatesTo(this)
+    private fun onLongClickListener(item: PokemonItem): Boolean {
+        onItemListener?.onSelect(item)
+        return true
+    }
+
+    private fun onClickListener(item: PokemonItem) {
+        if (selectedPokemonItem.containsValue(true)) {
+            onItemListener?.onSelect(item)
+        } else {
+            selectedPokemonItem.clear()
+            onItemListener?.onOpen(item)
+        }
+    }
+
+    private object PokemonDiffItemCallback : DiffUtil.ItemCallback<PokemonItem>() {
+        override fun areItemsTheSame(oldItem: PokemonItem, newItem: PokemonItem): Boolean {
+            return oldItem == newItem
+        }
+        override fun areContentsTheSame(oldItem: PokemonItem, newItem: PokemonItem): Boolean {
+            return oldItem.id == newItem.id
+        }
     }
 
     fun selectPokemon(pokemonItem: PokemonItem) {
         selectedPokemonItem.merge(pokemonItem, selectedPokemonItem[pokemonItem] ?: true) { _, _ ->
             selectedPokemonItem[pokemonItem]?.not() ?: true
         }
+        notifyItemChanged(pokemonItem.id - 1)
     }
 
-    override fun onLongClick(v: View): Boolean {
-        val item = v.tag as PokemonItem
-        return when (v.id) {
-            R.id.pokemon_list_item -> {
-                actionListener.onSelect(item)
-                notifyItemChanged(pokemon.indexOf(item))
-                true
-            }
-            else -> { false }
-        }
-    }
-
-    private fun removePokemon() {
-        val tmp = pokemon.toMutableList()
-        tmp.removeAll(selectedPokemonItem.map { it.key })
-        selectedPokemonItem = mutableMapOf()
-        val diffCallback = PokemonDiffCallback(oldList = this.pokemon, newList = tmp)
-        val diffResult = DiffUtil.calculateDiff(diffCallback)
-        this.pokemon = tmp
-        diffResult.dispatchUpdatesTo(this)
+    fun setOnItemClickListener(listener: UserActionListener) {
+        onItemListener = listener
     }
 }

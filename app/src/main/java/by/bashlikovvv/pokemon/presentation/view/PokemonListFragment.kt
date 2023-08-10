@@ -6,37 +6,32 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.os.bundleOf
+import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
-import androidx.navigation.NavOptions
 import androidx.navigation.fragment.findNavController
-import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView.VERTICAL
+import androidx.paging.LoadState
 import by.bashlikovvv.pokemon.R
-import by.bashlikovvv.pokemon.data.di.DataModule
 import by.bashlikovvv.pokemon.databinding.FragmentPokemonListBinding
 import by.bashlikovvv.pokemon.domain.model.PokemonItem
 import by.bashlikovvv.pokemon.presentation.adapters.PokemonListAdapter
+import by.bashlikovvv.pokemon.presentation.adapters.PokemonLoaderAdapter
 import by.bashlikovvv.pokemon.presentation.adapters.UserActionListener
-import by.bashlikovvv.pokemon.presentation.contract.CustomAction
-import by.bashlikovvv.pokemon.presentation.contract.HasCustomAction
 import by.bashlikovvv.pokemon.presentation.viewmodel.PokemonListViewModel
 import by.bashlikovvv.pokemon.utils.viewModelCreator
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 
-class PokemonListFragment : Fragment(), HasCustomAction {
+class PokemonListFragment : Fragment(), UserActionListener  {
 
     private lateinit var binding: FragmentPokemonListBinding
 
     private val viewModel: PokemonListViewModel by viewModelCreator {
-        PokemonListViewModel(DataModule.providePokemonListUseCase(requireContext())) {
-            updateActionListener(it)
-        }
+        PokemonListViewModel(requireContext())
     }
 
-    private val adapter: PokemonListAdapter by lazy(LazyThreadSafetyMode.SYNCHRONIZED) {
-        PokemonListAdapter(actionListener)
+    private val adapter: PokemonListAdapter by lazy(LazyThreadSafetyMode.NONE) {
+        PokemonListAdapter(requireContext())
     }
 
     override fun onCreateView(
@@ -44,7 +39,7 @@ class PokemonListFragment : Fragment(), HasCustomAction {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        binding = FragmentPokemonListBinding.inflate(inflater, container, false)
+        binding = FragmentPokemonListBinding.inflate(layoutInflater, container, false)
 
         return binding.root
     }
@@ -59,45 +54,40 @@ class PokemonListFragment : Fragment(), HasCustomAction {
         (requireContext() as AppCompatActivity).apply {
             supportActionBar?.title = getText(R.string.app_name)
         }
-        val layoutManager = LinearLayoutManager(requireContext()).apply {
-            orientation = VERTICAL
+        binding.pokemonRecyclerView.adapter = adapter.withLoadStateFooter(PokemonLoaderAdapter())
+
+        setUpLoadStateListener()
+        submitPagingData()
+
+        adapter.setOnItemClickListener(this)
+    }
+
+    private fun setUpLoadStateListener() {
+        adapter.addLoadStateListener { state ->
+            with(binding) {
+                pokemonRecyclerView.isVisible = state.refresh != LoadState.Loading
+                progressCircular.isVisible = state.refresh == LoadState.Loading
+            }
         }
-        binding.pokemonRecyclerView.layoutManager = layoutManager
-        binding.pokemonRecyclerView.adapter = adapter
+    }
+
+    private fun submitPagingData() {
         lifecycleScope.launch {
-            viewModel.pokemon.collectLatest {
-                adapter.setPokemon(it)
+            viewModel.pokemon.collectLatest { pagingData ->
+                adapter.submitData(pagingData)
             }
         }
     }
 
-    private val actionListener = object : UserActionListener {
-        override fun onOpen(pokemonItem: PokemonItem) {
-            val args = bundleOf(PokemonDetailsFragment.ARG_ID to pokemonItem.id)
-            this@PokemonListFragment.findNavController().navigate(
-                resId = R.id.action_pokemonListFragment_to_pokemonDetailsFragment,
-                args = args,
-                navOptions = NavOptions.Builder()
-                    .setEnterAnim(com.google.android.material.R.anim.abc_tooltip_enter)
-                    .setExitAnim(com.google.android.material.R.anim.abc_tooltip_exit)
-                    .build()
-            )
-        }
-
-        override fun onSelect(pokemonItem: PokemonItem) {
-            adapter.selectPokemon(pokemonItem)
-        }
+    override fun onOpen(pokemonItem: PokemonItem) {
+        val args = bundleOf(PokemonDetailsFragment.ARG_ID to pokemonItem.id)
+        findNavController().navigate(
+            resId = R.id.action_pokemonListFragment_to_pokemonDetailsFragment,
+            args = args
+        )
     }
 
-    private fun updateActionListener(value: Boolean) {
-        with(binding.progressCircular) {
-            visibility = if (value) {
-                View.VISIBLE
-            } else {
-                View.GONE
-            }
-        }
+    override fun onSelect(pokemonItem: PokemonItem) {
+        adapter.selectPokemon(pokemonItem)
     }
-
-    override fun getCustomAction(): CustomAction = adapter.deleteCustomAction
 }
