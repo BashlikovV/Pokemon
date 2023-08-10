@@ -9,3 +9,4 @@ App uses [pokeapi](https://pokeapi.co).
 - Lifecycle;
 - Room;
 - Glide;
+- Paging;
