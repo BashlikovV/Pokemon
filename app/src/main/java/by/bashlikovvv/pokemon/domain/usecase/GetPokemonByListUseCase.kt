@@ -1,11 +1,13 @@
 package by.bashlikovvv.pokemon.domain.usecase
 
+import androidx.paging.PagingData
 import by.bashlikovvv.pokemon.domain.model.PokemonItem
 import by.bashlikovvv.pokemon.domain.repository.IPokemonListRepository
+import kotlinx.coroutines.flow.Flow
 
 class GetPokemonByListUseCase(private val pokemonListRepository: IPokemonListRepository) {
 
-    suspend fun execute(): List<PokemonItem> {
+    fun execute(): Flow<PagingData<PokemonItem>> {
         return pokemonListRepository.getList()
     }
 }
