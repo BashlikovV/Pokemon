@@ -64,7 +64,8 @@ object DataModule {
             config = PagingConfig(
                 pageSize = Constants.PAGE_SIZE,
                 initialLoadSize = Constants.PAGE_SIZE,
-                maxSize = Constants.POKEMON_SIZE
+                maxSize = Constants.POKEMON_SIZE,
+                prefetchDistance = Constants.PAGE_SIZE
             ),
             remoteMediator = PokemonRemoteMediator(
                 pokemonListApi = api,

@@ -65,8 +65,8 @@ class PokemonRemoteMediator(
         state: PagingState<Int, PokemonItemEntity>
     ): Int? = when (loadType) {
         LoadType.REFRESH -> 0
-        LoadType.APPEND -> null
-        LoadType.PREPEND -> state.lastItemOrNull()?.id ?: 0
+        LoadType.APPEND -> state.lastItemOrNull()?.id ?: 0
+        LoadType.PREPEND -> null
     }
 
     override suspend fun initialize(): InitializeAction {

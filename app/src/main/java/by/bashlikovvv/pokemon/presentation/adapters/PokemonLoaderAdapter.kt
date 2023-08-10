@@ -58,8 +58,9 @@ class PokemonLoaderAdapter : LoadStateAdapter<PokemonLoaderAdapter.ItemViewHolde
         private val binding: PokemonListItemBinding
     ) : ItemViewHolder(binding.root) {
         override fun bind(loadState: LoadState) {
-            require(loadState is LoadState.Error)
-            binding.pokemonName.text = loadState.error.localizedMessage
+            if (loadState is LoadState.Error) {
+                binding.pokemonName.text = loadState.error.message ?: "error"
+            }
         }
         companion object {
             operator fun invoke(

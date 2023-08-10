@@ -23,6 +23,7 @@ class PokemonListAdapter(context: Context) :
     PagingDataAdapter<PokemonItem, PokemonListAdapter.PokemonListHolder>(PokemonDiffItemCallback) {
 
     private val layoutInflater = LayoutInflater.from(context)
+
     private var onItemListener: UserActionListener? = null
 
     private var selectedPokemonItem: MutableMap<PokemonItem, Boolean> = mutableMapOf()
@@ -53,18 +54,24 @@ class PokemonListAdapter(context: Context) :
                     selectIndicator.visibility = View.INVISIBLE
                 }
             }
-            itemView.setOnClickListener {
-                if (selectedPokemonItem.containsValue(true)) {
-                    onItemListener?.onSelect(item)
-                } else {
-                    selectedPokemonItem.clear()
-                    onItemListener?.onOpen(item)
-                }
-            }
+            itemView.setOnClickListener { onClickListener(item) }
             itemView.setOnLongClickListener {
-                onItemListener?.onSelect(item)
-                true
+                onLongClickListener(item)
             }
+        }
+    }
+
+    private fun onLongClickListener(item: PokemonItem): Boolean {
+        onItemListener?.onSelect(item)
+        return true
+    }
+
+    private fun onClickListener(item: PokemonItem) {
+        if (selectedPokemonItem.containsValue(true)) {
+            onItemListener?.onSelect(item)
+        } else {
+            selectedPokemonItem.clear()
+            onItemListener?.onOpen(item)
         }
     }
 
@@ -73,7 +80,7 @@ class PokemonListAdapter(context: Context) :
             return oldItem == newItem
         }
         override fun areContentsTheSame(oldItem: PokemonItem, newItem: PokemonItem): Boolean {
-            return oldItem.id == newItem.id && oldItem.name == newItem.name
+            return oldItem.id == newItem.id
         }
     }
 
