@@ -2,11 +2,17 @@ package by.bashlikovvv.pokemon.data.di
 
 import android.content.Context
 import android.net.ConnectivityManager
+import androidx.paging.ExperimentalPagingApi
+import androidx.paging.Pager
+import androidx.paging.PagingConfig
 import androidx.room.Room
 import by.bashlikovvv.pokemon.data.local.PokemonDatabase
 import by.bashlikovvv.pokemon.data.local.contract.RoomContract
+import by.bashlikovvv.pokemon.data.local.dao.PokemonPageDao
+import by.bashlikovvv.pokemon.data.local.model.PokemonItemEntity
 import by.bashlikovvv.pokemon.data.remote.PokemonDetailsApi
 import by.bashlikovvv.pokemon.data.remote.PokemonListApi
+import by.bashlikovvv.pokemon.data.remote.PokemonRemoteMediator
 import by.bashlikovvv.pokemon.data.repository.PokemonDetailsRepository
 import by.bashlikovvv.pokemon.data.repository.PokemonListRepository
 import by.bashlikovvv.pokemon.domain.usecase.GetPokemonByListUseCase
@@ -48,10 +54,50 @@ object DataModule {
         ).build()
     }
 
+    private fun providePokemonPageDao(db: PokemonDatabase): PokemonPageDao {
+        return db.pokemonPageDao
+    }
+
+    @OptIn(ExperimentalPagingApi::class)
+    fun providePokemonPagerOnline(dao: PokemonPageDao, api: PokemonListApi): Pager<Int, PokemonItemEntity> {
+        return Pager(
+            config = PagingConfig(
+                pageSize = Constants.PAGE_SIZE,
+                initialLoadSize = Constants.PAGE_SIZE,
+                maxSize = Constants.POKEMON_SIZE
+            ),
+            remoteMediator = PokemonRemoteMediator(
+                pokemonListApi = api,
+                pokemonPageDao = dao,
+                pokemonDetailsApi = providePokemonDetailsApi()
+            )
+        ) {
+            dao.selectItemsOnline()
+        }
+    }
+
+    private fun providePokemonPagerOffline(dao: PokemonPageDao): Pager<Int, PokemonItemEntity> {
+        return Pager(
+            config = PagingConfig(
+                pageSize = Constants.PAGE_SIZE,
+                initialLoadSize = Constants.PAGE_SIZE,
+                maxSize = Constants.POKEMON_SIZE
+            )
+        ) {
+            dao.selectItemsOffline()
+        }
+    }
+
     private fun providePokemonListRepository(context: Context): PokemonListRepository {
         return PokemonListRepository(
-            provideConnectivityManager(context), providePokemonListApi(),
-            providePokemonDetailsApi(), providePokemonDatabase(context).pokemonPageDao
+            cm = provideConnectivityManager(context),
+            pagerOnline = providePokemonPagerOnline(
+                providePokemonPageDao(db = providePokemonDatabase(context)),
+                providePokemonListApi(provideRetrofit())
+            ),
+            pagerOffline = providePokemonPagerOffline(
+                providePokemonPageDao(db = providePokemonDatabase(context))
+            )
         )
     }
 
