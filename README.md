@@ -10,3 +10,4 @@ App uses [pokeapi](https://pokeapi.co).
 - Room;
 - Glide;
 - Paging;
+- Hilt;
