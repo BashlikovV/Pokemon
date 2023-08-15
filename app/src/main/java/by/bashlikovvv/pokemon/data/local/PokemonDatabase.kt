@@ -4,6 +4,7 @@ import androidx.room.Database
 import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
 import by.bashlikovvv.pokemon.data.local.converters.BitmapTypeConverter
+import by.bashlikovvv.pokemon.data.local.converters.ListTypeConverter
 import by.bashlikovvv.pokemon.data.local.converters.StringTypeConverter
 import by.bashlikovvv.pokemon.data.local.dao.PokemonDetailsDao
 import by.bashlikovvv.pokemon.data.local.dao.PokemonPageDao
@@ -14,7 +15,7 @@ import by.bashlikovvv.pokemon.data.local.model.PokemonItemEntity
     entities = [PokemonItemEntity::class, PokemonDetailsEntity::class],
     version = 1
 )
-@TypeConverters(BitmapTypeConverter::class, StringTypeConverter::class)
+@TypeConverters(BitmapTypeConverter::class, StringTypeConverter::class, ListTypeConverter::class)
 abstract class PokemonDatabase : RoomDatabase() {
     abstract val pokemonDetailsDao: PokemonDetailsDao
     abstract val pokemonPageDao: PokemonPageDao
