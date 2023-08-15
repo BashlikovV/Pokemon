@@ -7,34 +7,34 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
 import androidx.annotation.StringRes
-import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.PagerSnapHelper
 import by.bashlikovvv.pokemon.R
-import by.bashlikovvv.pokemon.data.di.DataModule
 import by.bashlikovvv.pokemon.databinding.FragmentPokemonDetailsBinding
 import by.bashlikovvv.pokemon.domain.model.PokemonDetails
 import by.bashlikovvv.pokemon.presentation.adapters.ImagesListAdapter
 import by.bashlikovvv.pokemon.presentation.viewmodel.PokemonDetailsViewModel
-import by.bashlikovvv.pokemon.utils.viewModelCreator
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 
+@AndroidEntryPoint
 class PokemonDetailsFragment : Fragment() {
 
-    private lateinit var binding: FragmentPokemonDetailsBinding
+    private var _binding: FragmentPokemonDetailsBinding? = null
 
-    private val viewModel: PokemonDetailsViewModel by viewModelCreator {
-        PokemonDetailsViewModel(DataModule.providePokemonDetailsUseCase(requireContext()))
-    }
+    private val binding: FragmentPokemonDetailsBinding get() = _binding!!
+
+    private val viewModel: PokemonDetailsViewModel by viewModels()
 
     private val adapter = ImagesListAdapter()
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        binding = FragmentPokemonDetailsBinding.bind(view)
+        _binding = FragmentPokemonDetailsBinding.bind(view)
 
         setUpFragment(requireArguments().getInt(ARG_ID))
     }
@@ -44,7 +44,7 @@ class PokemonDetailsFragment : Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        binding = FragmentPokemonDetailsBinding.inflate(inflater, container, false)
+        _binding = FragmentPokemonDetailsBinding.inflate(inflater, container, false)
 
         return binding.root
     }
@@ -55,7 +55,7 @@ class PokemonDetailsFragment : Fragment() {
 
         lifecycleScope.launch {
             viewModel.pokemonDetails.collectLatest {
-                (requireContext() as AppCompatActivity).apply {
+                (requireActivity() as PokemonActivity).apply {
                     supportActionBar?.title = it.name
                 }
                 binding.pokemonName.text = it.name

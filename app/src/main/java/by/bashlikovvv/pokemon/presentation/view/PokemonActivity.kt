@@ -15,7 +15,9 @@ import by.bashlikovvv.pokemon.R
 import by.bashlikovvv.pokemon.databinding.ActivityPokemonBinding
 import by.bashlikovvv.pokemon.presentation.contract.CustomAction
 import by.bashlikovvv.pokemon.presentation.contract.HasCustomAction
+import dagger.hilt.android.AndroidEntryPoint
 
+@AndroidEntryPoint
 class PokemonActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityPokemonBinding
