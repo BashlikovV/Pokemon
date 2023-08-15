@@ -7,6 +7,7 @@ App uses [pokeapi](https://pokeapi.co).
 - Retrofit;
 - Gson;
 - Lifecycle;
+- KSP;
 - Room;
 - Glide;
 - Paging;
