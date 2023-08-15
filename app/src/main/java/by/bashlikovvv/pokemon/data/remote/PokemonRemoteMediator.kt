@@ -1,5 +1,6 @@
 package by.bashlikovvv.pokemon.data.remote
 
+import android.content.Context
 import android.graphics.Bitmap
 import androidx.paging.ExperimentalPagingApi
 import androidx.paging.LoadType
@@ -13,26 +14,28 @@ import by.bashlikovvv.pokemon.data.mapper.PokemonPageDtoMapper
 import by.bashlikovvv.pokemon.data.remote.response.SpritesDto
 import by.bashlikovvv.pokemon.domain.model.SpriteNames
 import by.bashlikovvv.pokemon.domain.model.Sprites
-import by.bashlikovvv.pokemon.presentation.App
 import by.bashlikovvv.pokemon.utils.Constants.Companion.PAGE_SIZE
 import by.bashlikovvv.pokemon.utils.getBitmapFromImage
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.resource.bitmap.CenterCrop
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import retrofit2.HttpException
 import java.io.IOException
 import java.util.concurrent.ExecutionException
+import javax.inject.Inject
 
 @OptIn(ExperimentalPagingApi::class)
-class PokemonRemoteMediator(
+class PokemonRemoteMediator @Inject constructor(
     private val pokemonListApi: PokemonListApi,
     private val pokemonDetailsApi: PokemonDetailsApi,
-    private val pokemonPageDao: PokemonPageDao
+    private val pokemonPageDao: PokemonPageDao,
+    @ApplicationContext private val context: Context
 ) : RemoteMediator<Int, PokemonItemEntity>() {
 
     private val pokemonPageDtoMapper = PokemonPageDtoMapper()
-    private val pokemonItemEntityMapper = PokemonItemEntityMapper()
+    private val pokemonItemEntityMapper = PokemonItemEntityMapper(context)
 
     override suspend fun load(
         loadType: LoadType,
@@ -82,18 +85,18 @@ class PokemonRemoteMediator(
 
     private suspend fun getBitmapWithGlide(url: String?) = withContext(Dispatchers.IO) {
         return@withContext try {
-            val result = Glide.with(App.instance)
+            val result = Glide.with(context)
                 .asBitmap()
                 .load(url)
                 .transform(CenterCrop())
                 .submit()
                 .get()
 
-            result ?: R.drawable.baseline_error_24.getBitmapFromImage(App.instance)
+            result ?: R.drawable.baseline_error_24.getBitmapFromImage(context)
         } catch (e: ExecutionException) {
-            R.drawable.baseline_error_24.getBitmapFromImage(App.instance)
+            R.drawable.baseline_error_24.getBitmapFromImage(context)
         } catch (e: InterruptedException) {
-            R.drawable.baseline_error_24.getBitmapFromImage(App.instance)
+            R.drawable.baseline_error_24.getBitmapFromImage(context)
         }
     }
 }

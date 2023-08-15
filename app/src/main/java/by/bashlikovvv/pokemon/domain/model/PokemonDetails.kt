@@ -35,27 +35,27 @@ sealed class SpriteNames(val name: String) {
 
         sealed class DreamWorld(val component1: String) : Other("dreamWorld") {
 
-            class FrontDefault : DreamWorld("frontDefault")
+            class FrontDefault : DreamWorld("dwFrontDefault")
 
-            class FrontFemale : DreamWorld("frontFemale")
+            class FrontFemale : DreamWorld("dwFrontFemale")
         }
 
         sealed class Home(val component1: String) : Other("home") {
 
-            class FrontDefault : Home("frontDefault")
+            class FrontDefault : Home("hFrontDefault")
 
-            class FrontFemale : Home("frontFemale")
+            class FrontFemale : Home("hFrontFemale")
 
-            class FrontShiny : DreamWorld("frontShiny")
+            class FrontShiny : DreamWorld("hFrontShiny")
 
-            class FrontShinyFemale : DreamWorld("frontShinyFemale")
+            class FrontShinyFemale : DreamWorld("hFrontShinyFemale")
         }
 
         sealed class OfficialArtwork(val component1: String) : Other("officialArtwork") {
 
-            class FrontDefault : OfficialArtwork("frontDefault")
+            class FrontDefault : OfficialArtwork("oaFrontDefault")
 
-            class FrontShiny : OfficialArtwork("frontShiny")
+            class FrontShiny : OfficialArtwork("oaFrontShiny")
 
         }
     }

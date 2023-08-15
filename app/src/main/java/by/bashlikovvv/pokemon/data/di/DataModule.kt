@@ -8,6 +8,7 @@ import androidx.paging.PagingConfig
 import androidx.room.Room
 import by.bashlikovvv.pokemon.data.local.PokemonDatabase
 import by.bashlikovvv.pokemon.data.local.contract.RoomContract
+import by.bashlikovvv.pokemon.data.local.dao.PokemonDetailsDao
 import by.bashlikovvv.pokemon.data.local.dao.PokemonPageDao
 import by.bashlikovvv.pokemon.data.local.model.PokemonItemEntity
 import by.bashlikovvv.pokemon.data.remote.PokemonDetailsApi
@@ -15,38 +16,58 @@ import by.bashlikovvv.pokemon.data.remote.PokemonListApi
 import by.bashlikovvv.pokemon.data.remote.PokemonRemoteMediator
 import by.bashlikovvv.pokemon.data.repository.PokemonDetailsRepository
 import by.bashlikovvv.pokemon.data.repository.PokemonListRepository
-import by.bashlikovvv.pokemon.domain.usecase.GetPokemonByListUseCase
-import by.bashlikovvv.pokemon.domain.usecase.GetPokemonDetailsByIdUseCase
 import by.bashlikovvv.pokemon.utils.Constants
+import dagger.Module
+import dagger.Provides
+import dagger.hilt.InstallIn
+import dagger.hilt.android.qualifiers.ApplicationContext
+import dagger.hilt.components.SingletonComponent
 import okhttp3.OkHttpClient
+import retrofit2.Converter
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
+import javax.inject.Qualifier
+import javax.inject.Singleton
 
-object DataModule {
+@Module
+@InstallIn(SingletonComponent::class)
+class DataModule {
 
-    private fun provideOkHttpClient(): OkHttpClient {
+    @Provides
+    @Singleton
+    fun provideOkHttpClient(): OkHttpClient {
         return OkHttpClient.Builder().build()
     }
 
-    private fun provideRetrofit(): Retrofit = Retrofit.Builder()
+    @Provides
+    @Singleton
+    fun provideConverterFactory(): Converter.Factory {
+        return GsonConverterFactory.create()
+    }
+
+    @Provides
+    @Singleton
+    fun provideRetrofit(okHttpClient: OkHttpClient, factory: Converter.Factory): Retrofit = Retrofit.Builder()
         .baseUrl(Constants.BASE_URL)
-        .client(provideOkHttpClient())
-        .addConverterFactory(GsonConverterFactory.create())
+        .client(okHttpClient)
+        .addConverterFactory(factory)
         .build()
 
-    private fun providePokemonListApi(retrofit: Retrofit = provideRetrofit()): PokemonListApi {
+    @Provides
+    @Singleton
+    fun providePokemonListApi(retrofit: Retrofit): PokemonListApi {
         return retrofit.create(PokemonListApi::class.java)
     }
 
-    private fun providePokemonDetailsApi(retrofit: Retrofit = provideRetrofit()): PokemonDetailsApi {
+    @Provides
+    @Singleton
+    fun providePokemonDetailsApi(retrofit: Retrofit): PokemonDetailsApi {
         return retrofit.create(PokemonDetailsApi::class.java)
     }
 
-    private fun provideConnectivityManager(context: Context): ConnectivityManager? {
-        return context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager?
-    }
-
-    private fun providePokemonDatabase(ctx: Context): PokemonDatabase {
+    @Provides
+    @Singleton
+    fun providePokemonDatabase(@ApplicationContext ctx: Context): PokemonDatabase {
         return Room.databaseBuilder(
             ctx,
             PokemonDatabase::class.java,
@@ -54,12 +75,31 @@ object DataModule {
         ).build()
     }
 
-    private fun providePokemonPageDao(db: PokemonDatabase): PokemonPageDao {
+    @Provides
+    @Singleton
+    fun providePokemonPageDao(db: PokemonDatabase): PokemonPageDao {
         return db.pokemonPageDao
     }
 
+    @Provides
+    @Singleton
+    fun providePokemonDetailsDao(db: PokemonDatabase): PokemonDetailsDao {
+        return db.pokemonDetailsDao
+    }
+
+    @Qualifier
+    @Retention(AnnotationRetention.BINARY)
+    annotation class PagerOnline
+    @Provides
+    @Singleton
     @OptIn(ExperimentalPagingApi::class)
-    fun providePokemonPagerOnline(dao: PokemonPageDao, api: PokemonListApi): Pager<Int, PokemonItemEntity> {
+    @PagerOnline
+    fun providePokemonPagerOnline(
+        dao: PokemonPageDao,
+        listApi: PokemonListApi,
+        detailsApi: PokemonDetailsApi,
+        @ApplicationContext context: Context
+    ): Pager<Int, PokemonItemEntity> {
         return Pager(
             config = PagingConfig(
                 pageSize = Constants.PAGE_SIZE,
@@ -68,16 +108,23 @@ object DataModule {
                 prefetchDistance = Constants.PAGE_SIZE
             ),
             remoteMediator = PokemonRemoteMediator(
-                pokemonListApi = api,
+                pokemonListApi = listApi,
                 pokemonPageDao = dao,
-                pokemonDetailsApi = providePokemonDetailsApi()
+                pokemonDetailsApi = detailsApi,
+                context = context
             )
         ) {
             dao.selectItemsOnline()
         }
     }
 
-    private fun providePokemonPagerOffline(dao: PokemonPageDao): Pager<Int, PokemonItemEntity> {
+    @Qualifier
+    @Retention(AnnotationRetention.BINARY)
+    annotation class PagerOffline
+    @Provides
+    @Singleton
+    @PagerOffline
+    fun providePokemonPagerOffline(dao: PokemonPageDao): Pager<Int, PokemonItemEntity> {
         return Pager(
             config = PagingConfig(
                 pageSize = Constants.PAGE_SIZE,
@@ -89,31 +136,35 @@ object DataModule {
         }
     }
 
-    private fun providePokemonListRepository(context: Context): PokemonListRepository {
+    @Provides
+    @Singleton
+    fun providePokemonListRepository(
+        @PagerOnline pagerOnline: Pager<Int, PokemonItemEntity>,
+        @PagerOffline pagerOffline: Pager<Int, PokemonItemEntity>,
+        @ApplicationContext context: Context
+    ): PokemonListRepository {
+        val connectivityManager = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
         return PokemonListRepository(
-            cm = provideConnectivityManager(context),
-            pagerOnline = providePokemonPagerOnline(
-                providePokemonPageDao(db = providePokemonDatabase(context)),
-                providePokemonListApi(provideRetrofit())
-            ),
-            pagerOffline = providePokemonPagerOffline(
-                providePokemonPageDao(db = providePokemonDatabase(context))
-            )
+            cm = connectivityManager,
+            pagerOnline = pagerOnline,
+            pagerOffline = pagerOffline,
+            context = context
         )
     }
 
-    fun providePokemonListUseCase(context: Context): GetPokemonByListUseCase {
-        return GetPokemonByListUseCase(providePokemonListRepository(context))
-    }
-
-    private fun providePokemonDetailsRepository(context: Context): PokemonDetailsRepository {
+    @Provides
+    @Singleton
+    fun providePokemonDetailsRepository(
+        detailsApi: PokemonDetailsApi,
+        detailsDao: PokemonDetailsDao,
+        @ApplicationContext context: Context
+    ): PokemonDetailsRepository {
+        val connectivityManager = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
         return PokemonDetailsRepository(
-            provideConnectivityManager(context), providePokemonDetailsApi(),
-            providePokemonDatabase(context).pokemonDetailsDao
+            cm = connectivityManager,
+            pokemonDetailsApi = detailsApi,
+            pokemonDetailsDao = detailsDao,
+            context = context
         )
-    }
-
-    fun providePokemonDetailsUseCase(context: Context): GetPokemonDetailsByIdUseCase {
-        return GetPokemonDetailsByIdUseCase(providePokemonDetailsRepository(context))
     }
 }

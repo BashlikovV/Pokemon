@@ -1,5 +1,6 @@
 package by.bashlikovvv.pokemon.data.repository
 
+import android.content.Context
 import android.graphics.Bitmap
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
@@ -13,20 +14,21 @@ import by.bashlikovvv.pokemon.domain.model.PokemonDetails
 import by.bashlikovvv.pokemon.domain.model.SpriteNames
 import by.bashlikovvv.pokemon.domain.model.Sprites
 import by.bashlikovvv.pokemon.domain.repository.IPokemonDetailsRepository
-import by.bashlikovvv.pokemon.presentation.App
 import com.bumptech.glide.Glide
-import com.bumptech.glide.load.resource.bitmap.CenterCrop
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.util.concurrent.ExecutionException
+import javax.inject.Inject
 
-class PokemonDetailsRepository(
+class PokemonDetailsRepository @Inject constructor(
     private val cm: ConnectivityManager?,
     private val pokemonDetailsApi: PokemonDetailsApi,
-    private val pokemonDetailsDao: PokemonDetailsDao
+    private val pokemonDetailsDao: PokemonDetailsDao,
+    @ApplicationContext private val context: Context
 ) : IPokemonDetailsRepository {
 
-    private val pokemonDetailsEntityMapper = PokemonDetailsEntityMapper()
+    private val pokemonDetailsEntityMapper = PokemonDetailsEntityMapper(context)
 
     @Throws(DetailsNotFoundException::class)
     override suspend fun getDetails(id: Int): PokemonDetails {
@@ -98,15 +100,16 @@ class PokemonDetailsRepository(
     private suspend fun getBitmapWithGlide(url: String?) = withContext(Dispatchers.IO) {
         if (url.isNullOrEmpty()) { return@withContext null }
         return@withContext try {
-            val result = Glide.with(App.instance)
+            val result = Glide.with(context)
                 .asBitmap()
                 .load(url)
-                .transform(CenterCrop())
+                .centerCrop()
                 .submit()
                 .get()
 
             result
         } catch (e: ExecutionException) {
+            e.printStackTrace()
             null
         } catch (e: InterruptedException) {
             null

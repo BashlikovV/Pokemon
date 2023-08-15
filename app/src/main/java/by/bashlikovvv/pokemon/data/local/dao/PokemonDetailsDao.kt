@@ -4,8 +4,8 @@ import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
-import by.bashlikovvv.pokemon.data.local.model.PokemonDetailsEntity
 import by.bashlikovvv.pokemon.data.local.contract.RoomContract.DetailsTable
+import by.bashlikovvv.pokemon.data.local.model.PokemonDetailsEntity
 
 @Dao
 interface PokemonDetailsDao {
