@@ -2,8 +2,9 @@ plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
     id("kotlin-parcelize")
-    id ("com.google.dagger.hilt.android")
+    id("com.google.dagger.hilt.android")
     id("com.google.devtools.ksp")
+    id("kotlin-kapt")
 }
 
 android {
@@ -80,5 +81,5 @@ dependencies {
     ksp("androidx.room:room-compiler:2.5.2")
     //Hilt
     implementation("com.google.dagger:hilt-android:2.45")
-    ksp("com.google.dagger:hilt-compiler:2.45")
+    kapt("com.google.dagger:hilt-compiler:2.45")
 }
