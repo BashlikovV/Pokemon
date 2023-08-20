@@ -10,7 +10,7 @@ class PokemonDtoMapper : Mapper<PokemonDto, PokemonItem> {
         return PokemonItem(
             name = entity.name,
             id = entity.getId(),
-            sprites = mutableMapOf()
+            sprite = ""
         )
     }
 
