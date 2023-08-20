@@ -1,14 +1,14 @@
 package by.bashlikovvv.pokemon.presentation.viewmodel
 
 import androidx.lifecycle.ViewModel
-import by.bashlikovvv.pokemon.domain.usecase.GetPokemonByListUseCase
+import by.bashlikovvv.pokemon.domain.usecase.GetPokemonListUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 
 @HiltViewModel
 class PokemonListViewModel @Inject constructor(
-    getPokemonByListUseCase: GetPokemonByListUseCase
+    getPokemonListUseCase: GetPokemonListUseCase
 ) : ViewModel() {
 
-    val pokemon = getPokemonByListUseCase.execute()
+    val pokemon = getPokemonListUseCase.execute()
 }
