@@ -1,7 +1,5 @@
 package by.bashlikovvv.pokemon.domain.model
 
-import android.graphics.Bitmap
-
 data class PokemonDetails(
     val id: Int = 0,
     val name: String = "",
@@ -11,7 +9,7 @@ data class PokemonDetails(
     val heightInDm: Int = 0
 )
 
-data class Sprites(val sprites: Map<String, Bitmap?>)
+data class Sprites(val sprites: Map<String, String?>)
 
 sealed class SpriteNames(val name: String) {
 
