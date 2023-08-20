@@ -9,7 +9,7 @@ class PokemonDetailsEntityMapper : Mapper<PokemonDetailsEntity, PokemonDetails> 
         return PokemonDetails(
             id = entity.id,
             name = entity.name,
-            sprites = Sprites(entity.sprites.associateBy { "" }),
+            sprites = Sprites(entity.sprites.associateBy { it }),
             types = entity.types,
             weightInHg = entity.weightInHg,
             heightInDm = entity.heightInDm
