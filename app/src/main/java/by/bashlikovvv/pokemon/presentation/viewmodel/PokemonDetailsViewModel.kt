@@ -1,5 +1,6 @@
 package by.bashlikovvv.pokemon.presentation.viewmodel
 
+import android.content.ContentResolver
 import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -9,7 +10,6 @@ import by.bashlikovvv.pokemon.domain.model.PokemonDetails
 import by.bashlikovvv.pokemon.domain.model.SpriteNames
 import by.bashlikovvv.pokemon.domain.model.Sprites
 import by.bashlikovvv.pokemon.domain.usecase.GetPokemonDetailsByIdUseCase
-import by.bashlikovvv.pokemon.utils.getBitmapFromImage
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -27,8 +27,12 @@ class PokemonDetailsViewModel @Inject constructor(
     private val _pokemonDetails = MutableStateFlow(PokemonDetails())
     val pokemonDetails = _pokemonDetails.asStateFlow()
 
-    private val bm by lazy(LazyThreadSafetyMode.SYNCHRONIZED) {
-        R.drawable.baseline_error_24.getBitmapFromImage(context)
+    private val spriteUri by lazy {
+        val rId = R.drawable.baseline_error_24
+        ContentResolver.SCHEME_ANDROID_RESOURCE + "://" +
+                context.resources.getResourcePackageName(rId) + '/' +
+                context.resources.getResourceTypeName(rId) + '/' +
+                context.resources.getResourceEntryName(rId)
     }
 
     fun loadDetails(id: Int, updateActionListener: UpdateActionListener) {
@@ -38,7 +42,8 @@ class PokemonDetailsViewModel @Inject constructor(
                 try {
                     getPokemonDetailsByIdUseCase.getDetails(id)
                 } catch (e: DetailsNotFoundException) {
-                    val sprites = mapOf(SpriteNames.FrontShiny().name to bm)
+                    val spriteName = SpriteNames.FrontShiny().name
+                    val sprites = mapOf(spriteName to spriteUri)
 
                     PokemonDetails(name = e.message ?: "", sprites = Sprites(sprites))
                 }
