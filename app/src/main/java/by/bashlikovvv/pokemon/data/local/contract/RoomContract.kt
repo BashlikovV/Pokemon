@@ -14,7 +14,7 @@ object RoomContract {
     object DetailsTable {
         const val TABLE_NAME = "details"
         const val COLUMN_NAME = "name"
-        const val COLUMN_SPRITE = "sprite"
+        const val COLUMN_SPRITES = "sprites"
         const val COLUMN_TYPES = "types"
         const val COLUMN_WEIGHT_IN_HG = "weight"
         const val COLUMN_HEIGHT_IN_DM = "height"
