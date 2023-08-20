@@ -8,7 +8,7 @@ import by.bashlikovvv.pokemon.data.local.contract.RoomContract.DetailsTable
 @Entity(tableName = DetailsTable.TABLE_NAME)
 data class PokemonDetailsEntity(
     @ColumnInfo(name = DetailsTable.COLUMN_NAME) val name: String,
-    @ColumnInfo(name = DetailsTable.COLUMN_SPRITE) val sprites: List<String>,
+    @ColumnInfo(name = DetailsTable.COLUMN_SPRITES) val sprites: List<String>,
     @ColumnInfo(name = DetailsTable.COLUMN_TYPES) val types: List<String>,
     @ColumnInfo(name = DetailsTable.COLUMN_WEIGHT_IN_HG) val weightInHg: Int,
     @ColumnInfo(name = DetailsTable.COLUMN_HEIGHT_IN_DM) val heightInDm: Int,
