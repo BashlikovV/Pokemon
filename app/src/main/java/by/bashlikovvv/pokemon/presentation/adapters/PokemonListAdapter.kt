@@ -4,13 +4,14 @@ import android.content.Context
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ImageView
 import androidx.paging.PagingDataAdapter
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import by.bashlikovvv.pokemon.R
 import by.bashlikovvv.pokemon.databinding.PokemonListItemBinding
 import by.bashlikovvv.pokemon.domain.model.PokemonItem
-import by.bashlikovvv.pokemon.domain.model.SpriteNames
+import com.bumptech.glide.Glide
 
 interface UserActionListener {
 
@@ -47,7 +48,7 @@ class PokemonListAdapter(context: Context) :
             with(binding) {
                 pokemonListItem.tag = item
                 pokemonName.text = item.name.replaceFirstChar { it.uppercase() }
-                pokemonSprite.setImageBitmap(item.sprites[SpriteNames.FrontShiny().name])
+                setBitmapWithGlide(item.sprite, pokemonSprite)
                 if (selectedPokemonItem[item] == true) {
                     selectIndicator.visibility = View.VISIBLE
                 } else {
@@ -56,14 +57,10 @@ class PokemonListAdapter(context: Context) :
             }
             itemView.setOnClickListener { onClickListener(item) }
             itemView.setOnLongClickListener {
-                onLongClickListener(item)
+                onItemListener?.onSelect(item)
+                true
             }
         }
-    }
-
-    private fun onLongClickListener(item: PokemonItem): Boolean {
-        onItemListener?.onSelect(item)
-        return true
     }
 
     private fun onClickListener(item: PokemonItem) {
@@ -93,5 +90,13 @@ class PokemonListAdapter(context: Context) :
 
     fun setOnItemClickListener(listener: UserActionListener) {
         onItemListener = listener
+    }
+
+    private fun setBitmapWithGlide(url: String, view: ImageView) {
+        Glide.with(view.context)
+            .asBitmap()
+            .load(url)
+            .centerCrop()
+            .into(view)
     }
 }
