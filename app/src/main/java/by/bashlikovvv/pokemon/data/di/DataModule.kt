@@ -97,8 +97,7 @@ class DataModule {
     fun providePokemonPagerOnline(
         dao: PokemonPageDao,
         listApi: PokemonListApi,
-        detailsApi: PokemonDetailsApi,
-        @ApplicationContext context: Context
+        detailsApi: PokemonDetailsApi
     ): Pager<Int, PokemonItemEntity> {
         return Pager(
             config = PagingConfig(
@@ -110,8 +109,7 @@ class DataModule {
             remoteMediator = PokemonRemoteMediator(
                 pokemonListApi = listApi,
                 pokemonPageDao = dao,
-                pokemonDetailsApi = detailsApi,
-                context = context
+                pokemonDetailsApi = detailsApi
             )
         ) {
             dao.selectItemsOnline()
@@ -147,8 +145,7 @@ class DataModule {
         return PokemonListRepository(
             cm = connectivityManager,
             pagerOnline = pagerOnline,
-            pagerOffline = pagerOffline,
-            context = context
+            pagerOffline = pagerOffline
         )
     }
 
@@ -163,8 +160,7 @@ class DataModule {
         return PokemonDetailsRepository(
             cm = connectivityManager,
             pokemonDetailsApi = detailsApi,
-            pokemonDetailsDao = detailsDao,
-            context = context
+            pokemonDetailsDao = detailsDao
         )
     }
 }
