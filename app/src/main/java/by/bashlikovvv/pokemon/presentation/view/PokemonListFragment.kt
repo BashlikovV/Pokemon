@@ -30,7 +30,7 @@ class PokemonListFragment : Fragment(), UserActionListener  {
 
     private val viewModel: PokemonListViewModel by viewModels()
 
-    private val adapter: PokemonListAdapter by lazy(LazyThreadSafetyMode.NONE) {
+    private val adapter: PokemonListAdapter by lazy(LazyThreadSafetyMode.SYNCHRONIZED) {
         PokemonListAdapter(requireContext())
     }
 
@@ -47,19 +47,24 @@ class PokemonListFragment : Fragment(), UserActionListener  {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         _binding = FragmentPokemonListBinding.bind(view)
+
+        setUpFragment()
         setUpRecyclerView()
     }
 
     private fun setUpRecyclerView() {
-        (requireActivity() as PokemonActivity).apply {
-            supportActionBar?.title = getText(R.string.app_name)
-        }
         binding.pokemonRecyclerView.adapter = adapter.withLoadStateFooter(PokemonLoaderAdapter())
 
         setUpLoadStateListener()
         submitPagingData()
 
         adapter.setOnItemClickListener(this)
+    }
+
+    private fun setUpFragment() {
+        (requireActivity() as PokemonActivity).apply {
+            supportActionBar?.title = getText(R.string.app_name)
+        }
     }
 
     private fun setUpLoadStateListener() {
