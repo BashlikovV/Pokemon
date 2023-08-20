@@ -38,16 +38,16 @@ class PokemonDetailsViewModel @Inject constructor(
     fun loadDetails(id: Int, updateActionListener: UpdateActionListener) {
         viewModelScope.launch {
             updateActionListener.updateActionListener(true)
-            _pokemonDetails.update {
-                try {
-                    getPokemonDetailsByIdUseCase.getDetails(id)
-                } catch (e: DetailsNotFoundException) {
-                    val spriteName = SpriteNames.FrontShiny().name
-                    val sprites = mapOf(spriteName to spriteUri)
+            val newDetails = try {
+                getPokemonDetailsByIdUseCase.getDetails(id)
+            } catch (e: DetailsNotFoundException) {
+                val spriteName = SpriteNames.FrontShiny().name
+                val sprites = mapOf(spriteName to spriteUri)
 
-                    PokemonDetails(name = e.message ?: "", sprites = Sprites(sprites))
-                }
+                PokemonDetails(name = e.message ?: "", sprites = Sprites(sprites))
             }
+
+            _pokemonDetails.update { newDetails }
         }.invokeOnCompletion { updateActionListener.updateActionListener(false) }
     }
 }
