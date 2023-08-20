@@ -5,7 +5,7 @@ import by.bashlikovvv.pokemon.domain.model.PokemonItem
 import by.bashlikovvv.pokemon.domain.repository.IPokemonListRepository
 import kotlinx.coroutines.flow.Flow
 
-class GetPokemonByListUseCase(private val pokemonListRepository: IPokemonListRepository) {
+class GetPokemonListUseCase(private val pokemonListRepository: IPokemonListRepository) {
 
     fun execute(): Flow<PagingData<PokemonItem>> {
         return pokemonListRepository.getList()
