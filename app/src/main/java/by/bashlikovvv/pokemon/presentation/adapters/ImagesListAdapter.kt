@@ -1,15 +1,17 @@
 package by.bashlikovvv.pokemon.presentation.adapters
 
 import android.annotation.SuppressLint
-import android.graphics.Bitmap
 import android.view.LayoutInflater
 import android.view.ViewGroup
+import android.widget.ImageView
 import androidx.recyclerview.widget.RecyclerView
+import by.bashlikovvv.pokemon.R
 import by.bashlikovvv.pokemon.databinding.ImagesListItemBinding
+import com.bumptech.glide.Glide
 
 class ImagesListAdapter : RecyclerView.Adapter<ImagesListAdapter.ImagesListHolder>() {
 
-    private var images = emptyList<Bitmap>()
+    private var images = emptyList<String>()
 
     class ImagesListHolder(
         val binding: ImagesListItemBinding
@@ -28,13 +30,21 @@ class ImagesListAdapter : RecyclerView.Adapter<ImagesListAdapter.ImagesListHolde
         val image = images[position]
         with(holder.binding) {
             pokemonImage.tag = image
-            pokemonImage.setImageBitmap(image)
+            setBitmapWithGlide(image, pokemonImage)
         }
     }
 
     @SuppressLint("NotifyDataSetChanged")
-    fun setImages(images: List<Bitmap>) {
+    fun setImages(images: List<String>) {
         this.images = images
         notifyDataSetChanged()
+    }
+
+    private fun setBitmapWithGlide(url: String, view: ImageView) {
+        Glide.with(view)
+            .load(url)
+            .centerCrop()
+            .error(R.drawable.baseline_error_24)
+            .into(view)
     }
 }
