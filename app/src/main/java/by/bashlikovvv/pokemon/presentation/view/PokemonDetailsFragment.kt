@@ -1,6 +1,5 @@
 package by.bashlikovvv.pokemon.presentation.view
 
-import android.graphics.Bitmap
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -68,8 +67,8 @@ class PokemonDetailsFragment : Fragment() {
     }
 
     private fun setUpRecyclerView(pokemonDetails: PokemonDetails) {
-        val images = mutableListOf<Bitmap>()
-        pokemonDetails.sprites.sprites.entries.forEach { entry ->
+        val images = mutableListOf<String>()
+        pokemonDetails.sprites.sprites.forEach { entry ->
             if (entry.value != null) {
                 images.add(entry.value!!)
             }
