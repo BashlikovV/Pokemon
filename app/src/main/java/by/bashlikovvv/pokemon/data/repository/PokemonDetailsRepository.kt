@@ -1,7 +1,5 @@
 package by.bashlikovvv.pokemon.data.repository
 
-import android.content.Context
-import android.graphics.Bitmap
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
 import by.bashlikovvv.pokemon.data.DetailsNotFoundException
@@ -14,21 +12,17 @@ import by.bashlikovvv.pokemon.domain.model.PokemonDetails
 import by.bashlikovvv.pokemon.domain.model.SpriteNames
 import by.bashlikovvv.pokemon.domain.model.Sprites
 import by.bashlikovvv.pokemon.domain.repository.IPokemonDetailsRepository
-import com.bumptech.glide.Glide
-import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import java.util.concurrent.ExecutionException
 import javax.inject.Inject
 
 class PokemonDetailsRepository @Inject constructor(
     private val cm: ConnectivityManager?,
     private val pokemonDetailsApi: PokemonDetailsApi,
-    private val pokemonDetailsDao: PokemonDetailsDao,
-    @ApplicationContext private val context: Context
+    private val pokemonDetailsDao: PokemonDetailsDao
 ) : IPokemonDetailsRepository {
 
-    private val pokemonDetailsEntityMapper = PokemonDetailsEntityMapper(context)
+    private val pokemonDetailsEntityMapper = PokemonDetailsEntityMapper()
 
     @Throws(DetailsNotFoundException::class)
     override suspend fun getDetails(id: Int): PokemonDetails {
@@ -75,44 +69,25 @@ class PokemonDetailsRepository @Inject constructor(
         return isConnected
     }
 
-    private suspend fun getSprites(spritesDto: SpritesDto): Sprites {
-        val sprites = mutableMapOf<String, Bitmap?>()
-        sprites[SpriteNames.BackDefault().name] = getBitmapWithGlide(spritesDto.backDefault)
-        sprites[SpriteNames.BackFemale().name] = getBitmapWithGlide(spritesDto.backFemale)
-        sprites[SpriteNames.BackShiny().name] = getBitmapWithGlide(spritesDto.backShiny)
-        sprites[SpriteNames.BackShinyFemale().name] = getBitmapWithGlide(spritesDto.backShinyFemale)
-        sprites[SpriteNames.FrontDefault().name] = getBitmapWithGlide(spritesDto.frontDefault)
-        sprites[SpriteNames.FrontFemale().name] = getBitmapWithGlide(spritesDto.frontFemale)
-        sprites[SpriteNames.FrontShiny().name] = getBitmapWithGlide(spritesDto.frontShiny)
-        sprites[SpriteNames.FrontShinyFemale().name] = getBitmapWithGlide(spritesDto.frontShinyFemale)
-        sprites[SpriteNames.Other.DreamWorld.FrontFemale().component1] = getBitmapWithGlide(spritesDto.other.dreamWorld.frontFemale)
-        sprites[SpriteNames.Other.DreamWorld.FrontDefault().component1] = getBitmapWithGlide(spritesDto.other.dreamWorld.frontDefault)
-        sprites[SpriteNames.Other.OfficialArtwork.FrontDefault().component1] = getBitmapWithGlide(spritesDto.other.officialArtworkDto.frontDefault)
-        sprites[SpriteNames.Other.OfficialArtwork.FrontShiny().component1] = getBitmapWithGlide(spritesDto.other.officialArtworkDto.frontShiny)
-        sprites[SpriteNames.Other.Home.FrontDefault().component1] = getBitmapWithGlide(spritesDto.other.home.frontDefault)
-        sprites[SpriteNames.Other.Home.FrontFemale().component1] = getBitmapWithGlide(spritesDto.other.home.frontFemale)
-        sprites[SpriteNames.Other.Home.FrontShinyFemale().component1] = getBitmapWithGlide(spritesDto.other.home.frontShinyFemale)
-        sprites[SpriteNames.Other.Home.FrontShiny().component1] = getBitmapWithGlide(spritesDto.other.home.frontShiny)
+    private fun getSprites(spritesDto: SpritesDto): Sprites {
+        val sprites = mutableMapOf<String, String?>()
+        sprites[SpriteNames.BackDefault().name] = spritesDto.backDefault
+        sprites[SpriteNames.BackFemale().name] = spritesDto.backFemale
+        sprites[SpriteNames.BackShiny().name] = spritesDto.backShiny
+        sprites[SpriteNames.BackShinyFemale().name] = spritesDto.backShinyFemale
+        sprites[SpriteNames.FrontDefault().name] = spritesDto.frontDefault
+        sprites[SpriteNames.FrontFemale().name] = spritesDto.frontFemale
+        sprites[SpriteNames.FrontShiny().name] = spritesDto.frontShiny
+        sprites[SpriteNames.FrontShinyFemale().name] = spritesDto.frontShinyFemale
+        /*sprites[SpriteNames.Other.DreamWorld.FrontFemale().component1] = spritesDto.other.dreamWorld.frontFemale
+        sprites[SpriteNames.Other.DreamWorld.FrontDefault().component1] = spritesDto.other.dreamWorld.frontDefault*/
+        sprites[SpriteNames.Other.OfficialArtwork.FrontDefault().component1] = spritesDto.other.officialArtworkDto.frontDefault
+        sprites[SpriteNames.Other.OfficialArtwork.FrontShiny().component1] = spritesDto.other.officialArtworkDto.frontShiny
+        sprites[SpriteNames.Other.Home.FrontDefault().component1] = spritesDto.other.home.frontDefault
+        sprites[SpriteNames.Other.Home.FrontFemale().component1] = spritesDto.other.home.frontFemale
+        sprites[SpriteNames.Other.Home.FrontShinyFemale().component1] = spritesDto.other.home.frontShinyFemale
+        sprites[SpriteNames.Other.Home.FrontShiny().component1] = spritesDto.other.home.frontShiny
 
         return Sprites(sprites)
-    }
-
-    private suspend fun getBitmapWithGlide(url: String?) = withContext(Dispatchers.IO) {
-        if (url.isNullOrEmpty()) { return@withContext null }
-        return@withContext try {
-            val result = Glide.with(context)
-                .asBitmap()
-                .load(url)
-                .centerCrop()
-                .submit()
-                .get()
-
-            result
-        } catch (e: ExecutionException) {
-            e.printStackTrace()
-            null
-        } catch (e: InterruptedException) {
-            null
-        }
     }
 }
