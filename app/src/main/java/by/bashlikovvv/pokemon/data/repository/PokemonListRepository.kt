@@ -1,6 +1,5 @@
 package by.bashlikovvv.pokemon.data.repository
 
-import android.content.Context
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
 import androidx.paging.Pager
@@ -11,7 +10,6 @@ import by.bashlikovvv.pokemon.data.local.model.PokemonItemEntity
 import by.bashlikovvv.pokemon.data.mapper.PokemonItemEntityMapper
 import by.bashlikovvv.pokemon.domain.model.PokemonItem
 import by.bashlikovvv.pokemon.domain.repository.IPokemonListRepository
-import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import javax.inject.Inject
@@ -19,11 +17,10 @@ import javax.inject.Inject
 class PokemonListRepository @Inject constructor(
     private val cm: ConnectivityManager?,
     @DataModule.PagerOnline private val pagerOnline: Pager<Int, PokemonItemEntity>,
-    @DataModule.PagerOffline private val pagerOffline: Pager<Int, PokemonItemEntity>,
-    @ApplicationContext context: Context
+    @DataModule.PagerOffline private val pagerOffline: Pager<Int, PokemonItemEntity>
 ) : IPokemonListRepository {
 
-    private val pokemonItemEntityMapper = PokemonItemEntityMapper(context)
+    private val pokemonItemEntityMapper = PokemonItemEntityMapper()
 
     override fun getList(): Flow<PagingData<PokemonItem>> {
         return if (isConnected()) {
