@@ -1,41 +1,27 @@
 package by.bashlikovvv.pokemon.data.remote
 
-import android.content.Context
-import android.graphics.Bitmap
 import androidx.paging.ExperimentalPagingApi
 import androidx.paging.LoadType
 import androidx.paging.PagingState
 import androidx.paging.RemoteMediator
-import by.bashlikovvv.pokemon.R
 import by.bashlikovvv.pokemon.data.local.dao.PokemonPageDao
 import by.bashlikovvv.pokemon.data.local.model.PokemonItemEntity
 import by.bashlikovvv.pokemon.data.mapper.PokemonItemEntityMapper
 import by.bashlikovvv.pokemon.data.mapper.PokemonPageDtoMapper
-import by.bashlikovvv.pokemon.data.remote.response.SpritesDto
-import by.bashlikovvv.pokemon.domain.model.SpriteNames
-import by.bashlikovvv.pokemon.domain.model.Sprites
 import by.bashlikovvv.pokemon.utils.Constants.Companion.PAGE_SIZE
-import by.bashlikovvv.pokemon.utils.getBitmapFromImage
-import com.bumptech.glide.Glide
-import com.bumptech.glide.load.resource.bitmap.CenterCrop
-import dagger.hilt.android.qualifiers.ApplicationContext
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
 import retrofit2.HttpException
 import java.io.IOException
-import java.util.concurrent.ExecutionException
 import javax.inject.Inject
 
 @OptIn(ExperimentalPagingApi::class)
 class PokemonRemoteMediator @Inject constructor(
     private val pokemonListApi: PokemonListApi,
     private val pokemonDetailsApi: PokemonDetailsApi,
-    private val pokemonPageDao: PokemonPageDao,
-    @ApplicationContext private val context: Context
+    private val pokemonPageDao: PokemonPageDao
 ) : RemoteMediator<Int, PokemonItemEntity>() {
 
     private val pokemonPageDtoMapper = PokemonPageDtoMapper()
-    private val pokemonItemEntityMapper = PokemonItemEntityMapper(context)
+    private val pokemonItemEntityMapper = PokemonItemEntityMapper()
 
     override suspend fun load(
         loadType: LoadType,
@@ -48,8 +34,7 @@ class PokemonRemoteMediator @Inject constructor(
             if (response.isSuccessful) {
                 val pokemon = pokemonPageDtoMapper.mapFromEntity(response.body()!!).onEach {
                     val pokemonDetailsDto = pokemonDetailsApi.getPokemonDetailsById(it.id).body()!!
-                    val sprites = pokemonDetailsDto.spritesDto.getSprites()
-                    it.sprites.putAll(sprites.sprites)
+                    it.sprite = pokemonDetailsDto.spritesDto.frontShiny!!
                 }
                 pokemonPageDao.insertItems(pokemon.map { pokemonItemEntityMapper.mapToEntity(it) })
                 MediatorResult.Success(endOfPaginationReached = pokemon.size < PAGE_SIZE)
@@ -74,29 +59,5 @@ class PokemonRemoteMediator @Inject constructor(
 
     override suspend fun initialize(): InitializeAction {
         return InitializeAction.SKIP_INITIAL_REFRESH
-    }
-
-    private suspend fun SpritesDto.getSprites(): Sprites {
-        val sprites = mutableMapOf<String, Bitmap?>()
-        sprites[SpriteNames.FrontShiny().name] = getBitmapWithGlide(frontShiny)
-
-        return Sprites(sprites)
-    }
-
-    private suspend fun getBitmapWithGlide(url: String?) = withContext(Dispatchers.IO) {
-        return@withContext try {
-            val result = Glide.with(context)
-                .asBitmap()
-                .load(url)
-                .transform(CenterCrop())
-                .submit()
-                .get()
-
-            result ?: R.drawable.baseline_error_24.getBitmapFromImage(context)
-        } catch (e: ExecutionException) {
-            R.drawable.baseline_error_24.getBitmapFromImage(context)
-        } catch (e: InterruptedException) {
-            R.drawable.baseline_error_24.getBitmapFromImage(context)
-        }
     }
 }
