@@ -8,7 +8,8 @@ class PokemonItemEntityMapper : Mapper<PokemonItemEntity, PokemonItem> {
         return PokemonItem(
             name = entity.name,
             id = entity.id,
-            sprite = entity.sprite
+            sprite = entity.sprite,
+            selected = entity.selected
         )
     }
 
@@ -16,7 +17,8 @@ class PokemonItemEntityMapper : Mapper<PokemonItemEntity, PokemonItem> {
         return PokemonItemEntity(
             name = domain.name,
             sprite = domain.sprite,
-            id = domain.id
+            id = domain.id,
+            selected = domain.selected
         )
     }
 }
