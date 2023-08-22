@@ -16,6 +16,7 @@ import by.bashlikovvv.pokemon.data.remote.PokemonListApi
 import by.bashlikovvv.pokemon.data.remote.PokemonRemoteMediator
 import by.bashlikovvv.pokemon.data.repository.PokemonDetailsRepository
 import by.bashlikovvv.pokemon.data.repository.PokemonListRepository
+import by.bashlikovvv.pokemon.data.repository.PokemonStateRepository
 import by.bashlikovvv.pokemon.utils.Constants
 import dagger.Module
 import dagger.Provides
@@ -161,6 +162,19 @@ class DataModule {
             cm = connectivityManager,
             pokemonDetailsApi = detailsApi,
             pokemonDetailsDao = detailsDao
+        )
+    }
+
+    @Provides
+    @Singleton
+    fun providePokemonStateRepository(
+        @ApplicationContext context: Context,
+        pokemonPageDao: PokemonPageDao
+    ): PokemonStateRepository {
+        val connectivityManager = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+        return PokemonStateRepository(
+            cm = connectivityManager,
+            pokemonPageDao = pokemonPageDao
         )
     }
 }
