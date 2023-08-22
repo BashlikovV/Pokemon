@@ -11,30 +11,24 @@ import androidx.recyclerview.widget.RecyclerView
 import by.bashlikovvv.pokemon.R
 import by.bashlikovvv.pokemon.databinding.PokemonListItemBinding
 import by.bashlikovvv.pokemon.domain.model.PokemonItem
+import by.bashlikovvv.pokemon.presentation.contract.IUserActionListener
 import com.bumptech.glide.Glide
-
-interface UserActionListener {
-
-    fun onOpen(pokemonItem: PokemonItem)
-
-    fun onSelect(pokemonItem: PokemonItem)
-}
 
 class PokemonListAdapter(context: Context) :
     PagingDataAdapter<PokemonItem, PokemonListAdapter.PokemonListHolder>(PokemonDiffItemCallback) {
 
     private val layoutInflater = LayoutInflater.from(context)
 
-    private var onItemListener: UserActionListener? = null
-
-    private var selectedPokemonItem: MutableMap<PokemonItem, Boolean> = mutableMapOf()
+    private var onItemListener: IUserActionListener? = null
 
     override fun onBindViewHolder(holder: PokemonListHolder, position: Int) {
         return holder.bind(getItem(position))
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): PokemonListHolder {
-        return PokemonListHolder(layoutInflater.inflate(R.layout.pokemon_list_item, parent, false))
+        return PokemonListHolder(
+            layoutInflater.inflate(R.layout.pokemon_list_item, parent, false)
+        )
     }
 
     inner class PokemonListHolder(
@@ -45,17 +39,18 @@ class PokemonListAdapter(context: Context) :
 
         fun bind(item: PokemonItem?) {
             if (item == null) return
+            if (item.isEmpty()) return
             with(binding) {
                 pokemonListItem.tag = item
                 pokemonName.text = item.name.replaceFirstChar { it.uppercase() }
                 setBitmapWithGlide(item.sprite, pokemonSprite)
-                if (selectedPokemonItem[item] == true) {
+                if (item.selected) {
                     selectIndicator.visibility = View.VISIBLE
                 } else {
-                    selectIndicator.visibility = View.INVISIBLE
+                    selectIndicator.visibility = View.GONE
                 }
             }
-            itemView.setOnClickListener { onClickListener(item) }
+            itemView.setOnClickListener { onItemListener?.onOpen(item) }
             itemView.setOnLongClickListener {
                 onItemListener?.onSelect(item)
                 true
@@ -63,33 +58,18 @@ class PokemonListAdapter(context: Context) :
         }
     }
 
-    private fun onClickListener(item: PokemonItem) {
-        if (selectedPokemonItem.containsValue(true)) {
-            onItemListener?.onSelect(item)
-        } else {
-            selectedPokemonItem.clear()
-            onItemListener?.onOpen(item)
-        }
+    fun setOnItemClickListener(listener: IUserActionListener) {
+        onItemListener = listener
     }
 
     private object PokemonDiffItemCallback : DiffUtil.ItemCallback<PokemonItem>() {
         override fun areItemsTheSame(oldItem: PokemonItem, newItem: PokemonItem): Boolean {
             return oldItem == newItem
         }
+
         override fun areContentsTheSame(oldItem: PokemonItem, newItem: PokemonItem): Boolean {
             return oldItem.id == newItem.id
         }
-    }
-
-    fun selectPokemon(pokemonItem: PokemonItem) {
-        selectedPokemonItem.merge(pokemonItem, selectedPokemonItem[pokemonItem] ?: true) { _, _ ->
-            selectedPokemonItem[pokemonItem]?.not() ?: true
-        }
-        notifyItemChanged(pokemonItem.id - 1)
-    }
-
-    fun setOnItemClickListener(listener: UserActionListener) {
-        onItemListener = listener
     }
 
     private fun setBitmapWithGlide(url: String, view: ImageView) {
