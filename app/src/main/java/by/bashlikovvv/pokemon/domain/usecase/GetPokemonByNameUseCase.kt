@@ -1,6 +1,7 @@
 package by.bashlikovvv.pokemon.domain.usecase
 
 import androidx.paging.PagingData
+import androidx.paging.filter
 import by.bashlikovvv.pokemon.domain.model.PokemonItem
 import by.bashlikovvv.pokemon.domain.repository.IPokemonListRepository
 import kotlinx.coroutines.flow.Flow
@@ -10,15 +11,7 @@ class GetPokemonByNameUseCase(private val pokemonListRepository: IPokemonListRep
 
     fun execute(name: String): Flow<PagingData<PokemonItem>> {
         return pokemonListRepository.getList().transform { pagingData ->
-            /*pagingData.map {
-                val list = mutableListOf<PokemonItem>()
-
-                if (it.name.contains(name, true)) {
-                    list.add(it)
-                }
-
-                emit(PagingData.from(list))
-            }*/
+            emit(pagingData.filter { it.name.contains(name, true) })
         }
     }
 }
