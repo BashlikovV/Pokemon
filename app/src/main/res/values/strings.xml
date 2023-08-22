@@ -12,4 +12,5 @@
     <string name="height">height: %1$s</string>
     <string name="plain_text">%1$s</string>
     <string name="test">test</string>
+    <string name="search">Search</string>
 </resources>
