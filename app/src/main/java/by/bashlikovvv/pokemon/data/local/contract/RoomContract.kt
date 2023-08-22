@@ -8,6 +8,7 @@ object RoomContract {
         const val TABLE_NAME = "pages"
         const val COLUMN_NAME = "name"
         const val COLUMN_SPRITE = "sprite"
+        const val COLUMN_SELECTED = "selected"
         const val COLUMN_ID = "id"
     }
 
