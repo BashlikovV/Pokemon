@@ -9,6 +9,7 @@ import by.bashlikovvv.pokemon.data.local.contract.RoomContract.PageTable
 data class PokemonItemEntity(
     @ColumnInfo(name = PageTable.COLUMN_NAME) val name: String,
     @ColumnInfo(name = PageTable.COLUMN_SPRITE) val sprite: String,
+    @ColumnInfo(name = PageTable.COLUMN_SELECTED) val selected: Boolean,
     @PrimaryKey(autoGenerate = true)
     @ColumnInfo(name = PageTable.COLUMN_ID) val id: Int
 )
