@@ -31,6 +31,7 @@
             android:layout_marginEnd="2.5dp"
             android:layout_marginBottom="2.5dp"
             app:tint="@color/green_yellow"
+            android:visibility="gone"
             android:contentDescription="@string/select_indicator" />
     </FrameLayout>
 
