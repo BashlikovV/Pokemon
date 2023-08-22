@@ -12,3 +12,6 @@ App uses [pokeapi](https://pokeapi.co).
 - Glide;
 - Paging;
 - Hilt;
+
+## Usage
+![](./assets/rec.gif)
