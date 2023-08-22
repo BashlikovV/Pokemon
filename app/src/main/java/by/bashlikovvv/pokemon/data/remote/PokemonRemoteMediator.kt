@@ -34,8 +34,9 @@ class PokemonRemoteMediator @Inject constructor(
             if (response.isSuccessful) {
                 val pokemon = pokemonPageDtoMapper.mapFromEntity(response.body()!!).onEach {
                     val pokemonDetailsDto = pokemonDetailsApi.getPokemonDetailsById(it.id).body()!!
-                    it.sprite = pokemonDetailsDto.spritesDto.frontShiny!!
+                    it.sprite = pokemonDetailsDto.spritesDto.frontShiny ?: ""
                 }
+
                 pokemonPageDao.insertItems(pokemon.map { pokemonItemEntityMapper.mapToEntity(it) })
                 MediatorResult.Success(endOfPaginationReached = pokemon.size < PAGE_SIZE)
             } else {
