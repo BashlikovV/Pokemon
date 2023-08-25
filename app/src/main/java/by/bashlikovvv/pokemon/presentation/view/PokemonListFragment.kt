@@ -72,6 +72,23 @@ class PokemonListFragment : Fragment(), IUserActionListener {
         adapter.setOnItemClickListener(this)
     }
 
+    private fun setUpLoadStateListener() {
+        adapter.addLoadStateListener { state ->
+            with(binding) {
+                pokemonRecyclerView.isVisible = state.refresh != LoadState.Loading
+                progressCircular.isVisible = state.refresh == LoadState.Loading
+            }
+        }
+    }
+
+    private fun submitPagingData() {
+        lifecycleScope.launch {
+            viewModel.pokemon.collectLatest { pagingData ->
+                adapter.submitData(pagingData)
+            }
+        }
+    }
+
     private fun setUpFragment() {
         (requireActivity() as PokemonActivity).apply {
             supportActionBar?.title = getText(R.string.app_name)
@@ -132,23 +149,6 @@ class PokemonListFragment : Fragment(), IUserActionListener {
             })
             setOnSearchClickListener {
                 viewModel.unselectPokemon()
-            }
-        }
-    }
-
-    private fun setUpLoadStateListener() {
-        adapter.addLoadStateListener { state ->
-            with(binding) {
-                pokemonRecyclerView.isVisible = state.refresh != LoadState.Loading
-                progressCircular.isVisible = state.refresh == LoadState.Loading
-            }
-        }
-    }
-
-    private fun submitPagingData() {
-        lifecycleScope.launch {
-            viewModel.pokemon.collectLatest { pagingData ->
-                adapter.submitData(pagingData)
             }
         }
     }
