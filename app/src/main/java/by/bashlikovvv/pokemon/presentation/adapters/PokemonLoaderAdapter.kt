@@ -6,14 +6,14 @@ import android.view.ViewGroup
 import androidx.paging.LoadState
 import androidx.paging.LoadStateAdapter
 import androidx.recyclerview.widget.RecyclerView
+import by.bashlikovvv.pokemon.databinding.ItemErrorLayoutBinding
 import by.bashlikovvv.pokemon.databinding.ItemProgressLayoutBinding
-import by.bashlikovvv.pokemon.databinding.PokemonListItemBinding
 
 class PokemonLoaderAdapter : LoadStateAdapter<PokemonLoaderAdapter.ItemViewHolder>() {
 
     override fun getStateViewType(loadState: LoadState) = when(loadState) {
         is LoadState.NotLoading -> error("Not supported")
-        LoadState.Loading -> PROGRESS
+        is LoadState.Loading -> PROGRESS
         is LoadState.Error -> ERROR
     }
 
@@ -55,11 +55,11 @@ class PokemonLoaderAdapter : LoadStateAdapter<PokemonLoaderAdapter.ItemViewHolde
     }
 
     class ErrorViewHolder internal constructor(
-        private val binding: PokemonListItemBinding
+        private val binding: ItemErrorLayoutBinding
     ) : ItemViewHolder(binding.root) {
         override fun bind(loadState: LoadState) {
             if (loadState is LoadState.Error) {
-                binding.pokemonName.text = loadState.error.message ?: "error"
+                binding.errorMessage.text = loadState.error.message ?: "error"
             }
         }
         companion object {
@@ -69,7 +69,7 @@ class PokemonLoaderAdapter : LoadStateAdapter<PokemonLoaderAdapter.ItemViewHolde
                 attachToRoot: Boolean = false
             ): ErrorViewHolder {
                 return ErrorViewHolder(
-                    PokemonListItemBinding.inflate(
+                    ItemErrorLayoutBinding.inflate(
                         layoutInflater,
                         parent,
                         attachToRoot
