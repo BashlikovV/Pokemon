@@ -21,7 +21,6 @@
             android:scaleType="centerCrop"
             android:background="@drawable/round_outline_10" />
 
-
         <ImageView
             android:id="@+id/select_indicator"
             android:layout_width="15dp"
