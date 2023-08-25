@@ -39,7 +39,7 @@ class PokemonListViewModel @Inject constructor(
     private val _searchBy: MutableStateFlow<String> = MutableStateFlow("")
 
     private val localChanges = LocalChanges()
-    private val localChangesFlow = MutableStateFlow(localChanges)
+    private val localChangesFlow = MutableStateFlow(OnChange(localChanges))
 
     init {
         val originPokemonFlow = _searchBy.asStateFlow()
@@ -67,7 +67,8 @@ class PokemonListViewModel @Inject constructor(
                 localChanges.selectItem(pokemonItem.id)
                 updatePokemonUseCase.execute(pokemonItem.id, !pokemonItem.selected)
             } finally {
-                localChangesFlow.update { localChanges }
+
+                localChangesFlow.update { OnChange(localChanges) }
             }
         }
     }
@@ -79,15 +80,15 @@ class PokemonListViewModel @Inject constructor(
             localChanges.unselect()
             unselectPokemonUseCase.execute()
         } finally {
-            localChangesFlow.update { localChanges }
+            localChangesFlow.update { OnChange(localChanges) }
         }
     }
 
     fun isContainsSelected() = localChanges.isContainsSelected()
 
-    private fun merge(users: PagingData<PokemonItem>, localChanges: LocalChanges): PagingData<PokemonItem> {
+    private fun merge(users: PagingData<PokemonItem>, localChanges: OnChange<LocalChanges>): PagingData<PokemonItem> {
         return users.map { pokemon ->
-                val localSelectedFlag = localChanges.isSelected(pokemon.id)
+                val localSelectedFlag = localChanges.value.isSelected(pokemon.id)
 
                 val userWithLocalChanges = if (localSelectedFlag == null) {
                     pokemon
@@ -97,4 +98,6 @@ class PokemonListViewModel @Inject constructor(
                 userWithLocalChanges
             }
     }
+
+    class OnChange<T>(val value: T)
 }
