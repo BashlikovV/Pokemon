@@ -90,14 +90,16 @@ class PokemonListViewModel @Inject constructor(
         return users.map { pokemon ->
                 val localSelectedFlag = localChanges.value.isSelected(pokemon.id)
 
-                val userWithLocalChanges = if (localSelectedFlag == null) {
+                val pokemonWithLocalChanges = if (localSelectedFlag == null) {
                     pokemon
                 } else {
                     pokemon.copy(selected = localSelectedFlag)
                 }
-                userWithLocalChanges
+
+                pokemonWithLocalChanges
             }
     }
 
-    class OnChange<T>(val value: T)
+    @JvmInline
+    value class OnChange<T>(val value: T)
 }

@@ -7,6 +7,9 @@ import kotlinx.coroutines.flow.Flow
 
 class GetPokemonListUseCase(private val pokemonListRepository: IPokemonListRepository) {
 
+    /**
+     * @return Flow of PagingData with [PokemonItem]
+     * */
     fun execute(): Flow<PagingData<PokemonItem>> {
         return pokemonListRepository.getList()
     }

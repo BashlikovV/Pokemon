@@ -9,6 +9,10 @@ import kotlinx.coroutines.flow.transform
 
 class GetPokemonByNameUseCase(private val pokemonListRepository: IPokemonListRepository) {
 
+    /**
+     * @param name the name of the desired pokemon
+     * @return Flow of PagingData with [PokemonItem]
+     * */
     fun execute(name: String): Flow<PagingData<PokemonItem>> {
         return pokemonListRepository.getList().transform { pagingData ->
             emit(pagingData.filter { it.name.contains(name, true) })

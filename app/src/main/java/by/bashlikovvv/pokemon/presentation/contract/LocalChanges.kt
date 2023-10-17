@@ -14,6 +14,7 @@ class LocalChanges {
     fun isSelected(id: Int) = selectedFlags[id]
 
     fun unselect() = selectedFlags.clear()
+
     fun isInProgress(id: Int): Boolean = idsInProgress.contains(id)
 
     fun isContainsSelected() = selectedFlags.containsValue(true)

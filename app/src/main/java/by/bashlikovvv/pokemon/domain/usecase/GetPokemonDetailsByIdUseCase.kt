@@ -9,7 +9,8 @@ class GetPokemonDetailsByIdUseCase(private val pokemonDetailsRepository: IPokemo
 
     /**
     * @throws DetailsNotFoundException
-    * @param id identifier of pokemon
+    * @param id the identifier of pokemon
+    * @return [PokemonDetails]
     * */
     @Throws(DetailsNotFoundException::class)
     suspend fun getDetails(id: Int): PokemonDetails {
